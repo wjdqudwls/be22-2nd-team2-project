@@ -110,6 +110,21 @@ erDiagram
         bigint book_id FK
         bigint voter_id FK
         varchar vote_type "LIKE/DISLIKE"
+        datetime created_at
+    }
+
+    comments {
+        bigint comment_id PK
+        bigint book_id FK
+        bigint writer_id FK
+        text content
+        datetime created_at
+        datetime updated_at
+    }
+
+    categories {
+        varchar category_id PK
+        varchar category_nm
     }
 ```
 
@@ -228,6 +243,29 @@ CREATE TABLE `book_votes` (
 *   `develop`: 개발 중인 최신 버전
 *   `feature/{domain}/{function}`: 기능 단위 개발 브랜치
     *   Ex) `feature/member/login`, `feature/book/create`
+
+### 🌳 SourceTree 사용 가이드 (Branch Workflow)
+소스트리를 사용하여 위 브랜치 전략을 따르는 방법입니다.
+
+1.  **브랜치 생성 (Create Branch)**
+    *   상단 메뉴의 **[브랜치]** 버튼 클릭
+    *   **새 브랜치 이름:** `feature/기능명` 입력 (예: `feature/member/login`)
+    *   **기준 브랜치 (Checkout):** `develop` 선택
+    *   '브랜치 생성' 클릭 (자동으로 해당 브랜치로 체크아웃됨)
+
+2.  **작업 및 커밋 (Commit)**
+    *   코드 수정 후, **파일 상태** 탭에서 스테이지에 올리기
+    *   하단 커밋 메시지 창에 컨벤션에 맞춰 메시지 입력 (예: `feat: 회원가입 기능 구현`)
+    *   **[커밋]** 버튼 클릭
+
+3.  **푸시 (Push)**
+    *   상단 메뉴의 **[푸시]** 버튼 클릭
+    *   현재 작업한 `feature/...` 브랜치 체크 후 푸시 (원격 저장소에 업로드)
+
+4.  **풀 리퀘스트 (Pull Request)**
+    *   GitHub/GitLab 웹사이트로 이동
+    *   `feature/...` 브랜치에서 `develop` 브랜치로 **Merge Request (PR)** 생성
+    *   팀원 리뷰 후 Merge 승인
 
 <br>
 
