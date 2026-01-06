@@ -33,6 +33,7 @@
 ![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
 ![JPA](https://img.shields.io/badge/JPA-Hibernate-59666C?style=flat-square&logo=hibernate&logoColor=white)
+![MyBatis](https://img.shields.io/badge/MyBatis-3.5-C63B2B?style=flat-square&logo=mybatis&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-10.6-003545?style=flat-square&logo=mariadb&logoColor=white)
 
 ### Architecture Strategy
@@ -76,47 +77,57 @@ erDiagram
     users ||--o{ sentences : "writer_id (작성)"
     users ||--o{ comments : "writer_id (작성)"
     users ||--o{ book_votes : "voter_id (투표)"
+    users ||--o{ sentence_votes : "voter_id (투표)"
 
     categories ||--o{ books : "category_id (분류)"
 
     books ||--|{ sentences : contains
     books ||--o{ comments : has
     books ||--o{ book_votes : has
+    sentences ||--o{ sentence_votes : has
 
     users {
-        bigint user_id PK
+        int user_id PK
         varchar user_email
         varchar user_nicknm
         varchar user_status "ACTIVE/DELETED"
     }
     
     books {
-        bigint book_id PK
-        bigint writer_id FK
+        int book_id PK
+        int writer_id FK
         varchar category_id FK
-        bigint last_writer_id FK
+        int last_writer_id FK
         string status "WRITING/COMPLETED"
     }
 
     sentences {
-        bigint sentence_id PK
-        bigint book_id FK
-        bigint writer_id FK
+        int sentence_id PK
+        int book_id FK
+        int writer_id FK
         int sequence_no
     }
     
     book_votes {
-        bigint vote_id PK
-        bigint book_id FK
-        bigint voter_id FK
+        int vote_id PK
+        int book_id FK
+        int voter_id FK
+        varchar vote_type "LIKE/DISLIKE"
+        datetime created_at
+    }
+
+    sentence_votes {
+        int vote_id PK
+        int sentence_id FK
+        int voter_id FK
         varchar vote_type "LIKE/DISLIKE"
         datetime created_at
     }
 
     comments {
-        bigint comment_id PK
-        bigint book_id FK
-        bigint writer_id FK
+        int comment_id PK
+        int book_id FK
+        int writer_id FK
         text content
         datetime created_at
         datetime updated_at
@@ -140,7 +151,7 @@ erDiagram
 ```sql
 -- 1. 사용자 (Users)
 CREATE TABLE `users` (
-    `user_id`      BIGINT       NOT NULL AUTO_INCREMENT,
+    `user_id`      INT          NOT NULL AUTO_INCREMENT,
     `user_email`   VARCHAR(100) NOT NULL COMMENT '로그인 ID',
     `user_pw`      VARCHAR(255) NOT NULL,
     `user_nicknm`  VARCHAR(50)  NOT NULL,
@@ -163,14 +174,14 @@ CREATE TABLE `categories` (
 
 -- 3. 소설 (Books)
 CREATE TABLE `books` (
-    `book_id`             BIGINT       NOT NULL AUTO_INCREMENT,
-    `writer_id`           BIGINT       NOT NULL,
+    `book_id`             INT          NOT NULL AUTO_INCREMENT,
+    `writer_id`           INT          NOT NULL,
     `category_id`         VARCHAR(20)  NOT NULL,
     `title`               VARCHAR(200) NOT NULL,
     `status`              VARCHAR(20)  NOT NULL DEFAULT 'WRITING',
     `current_sequence`    INT          NOT NULL DEFAULT 1,
     `max_sequence`        INT          NOT NULL DEFAULT 20,
-    `last_writer_user_id` BIGINT       NULL COMMENT '연속 작성 방지',
+    `last_writer_user_id` INT          NULL COMMENT '연속 작성 방지',
     `created_at`          DATETIME     NOT NULL DEFAULT NOW(),
     `updated_at`          DATETIME     NULL,
     PRIMARY KEY (`book_id`)
@@ -178,9 +189,9 @@ CREATE TABLE `books` (
 
 -- 4. 문장 (Sentences)
 CREATE TABLE `sentences` (
-    `sentence_id` BIGINT   NOT NULL AUTO_INCREMENT,
-    `book_id`     BIGINT   NOT NULL,
-    `writer_id`   BIGINT   NOT NULL,
+    `sentence_id` INT      NOT NULL AUTO_INCREMENT,
+    `book_id`     INT      NOT NULL,
+    `writer_id`   INT      NOT NULL,
     `content`     TEXT     NOT NULL,
     `sequence_no` INT      NOT NULL,
     `created_at`  DATETIME NOT NULL DEFAULT NOW(),
@@ -189,24 +200,37 @@ CREATE TABLE `sentences` (
 
 -- 5. 댓글 (Comments)
 CREATE TABLE `comments` (
-    `comment_id` BIGINT   NOT NULL AUTO_INCREMENT,
-    `book_id`    BIGINT   NOT NULL,
-    `writer_id`  BIGINT   NOT NULL,
+    `comment_id` INT      NOT NULL AUTO_INCREMENT,
+    `book_id`    INT      NOT NULL,
+    `writer_id`  INT      NOT NULL,
     `content`    TEXT     NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT NOW(),
     `updated_at` DATETIME NULL,
     PRIMARY KEY (`comment_id`)
 );
 
--- 6. 투표 (Book Votes)
+-- 6. 소설 투표 (Book Votes)
 CREATE TABLE `book_votes` (
-    `vote_id`    BIGINT      NOT NULL AUTO_INCREMENT,
-    `book_id`    BIGINT      NOT NULL,
-    `voter_id`   BIGINT      NOT NULL,
+    `vote_id`    INT         NOT NULL AUTO_INCREMENT,
+    `book_id`    INT         NOT NULL,
+    `voter_id`   INT         NOT NULL,
     `vote_type`  VARCHAR(10) NOT NULL COMMENT 'LIKE, DISLIKE',
     `created_at` DATETIME    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (`vote_id`),
-    UNIQUE KEY `uk_book_voter` (`book_id`, `voter_id`)
+    UNIQUE KEY `uk_book_voter` (`book_id`, `voter_id`),
+    CONSTRAINT `chk_book_vote_type` CHECK (`vote_type` IN ('LIKE', 'DISLIKE'))
+);
+
+-- 7. 문장 투표 (Sentence Votes)
+CREATE TABLE `sentence_votes` (
+    `vote_id`     INT         NOT NULL AUTO_INCREMENT,
+    `sentence_id` INT         NOT NULL,
+    `voter_id`    INT         NOT NULL,
+    `vote_type`   VARCHAR(10) NOT NULL COMMENT 'LIKE, DISLIKE',
+    `created_at`  DATETIME    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (`vote_id`),
+    UNIQUE KEY `uk_sentence_voter` (`sentence_id`, `voter_id`),
+    CONSTRAINT `chk_sentence_vote_type` CHECK (`vote_type` IN ('LIKE', 'DISLIKE'))
 );
 ```
 </details>
