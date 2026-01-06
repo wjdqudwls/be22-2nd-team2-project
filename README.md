@@ -111,20 +111,18 @@ erDiagram
         bigint voter_id FK
         varchar vote_type "LIKE/DISLIKE"
     }
+```
+
 <br>
 
-6. 💾 Database Schema (DDL)
+## 6. 💾 Database Schema (DDL)
 
 프로젝트 초기 설정을 위한 MariaDB DDL 스크립트입니다.
 
 <details>
 <summary>👉 <b>Click to view SQL Script</b></summary>
 
-code
-SQL
-download
-content_copy
-expand_less
+```sql
 -- 1. 사용자 (Users)
 CREATE TABLE `users` (
     `user_id`      BIGINT       NOT NULL AUTO_INCREMENT,
@@ -195,52 +193,43 @@ CREATE TABLE `book_votes` (
     PRIMARY KEY (`vote_id`),
     UNIQUE KEY `uk_book_voter` (`book_id`, `voter_id`)
 );
+```
 </details>
 
 <br>
 
-7. 🔌 API 명세 (Endpoint Example)
-Method	URI	설명	권한
-POST	/api/auth/signup	신규 작가 등록 (회원가입)	All
-POST	/api/auth/login	로그인	All
-POST	/api/books	새로운 이야기 시작 (방 만들기)	User
-GET	/api/books	이야기 목록 조회 (필터링)	All
-POST	/api/books/{bookId}/sentences	문장 이어 쓰기 (핵심 기능)	User
-GET	/api/books/{bookId}	소설 상세 조회 (문장 전체)	All
-POST	/api/books/{bookId}/votes	소설 개추/비추 (LIKE/DISLIKE)	User
+## 7. 🔌 API 명세 (Endpoint Example)
+
+| Method | URI | 설명 | 권한 |
+|:---:|:---|:---|:---:|
+| POST | `/api/auth/signup` | 신규 작가 등록 (회원가입) | All |
+| POST | `/api/auth/login` | 로그인 | All |
+| POST | `/api/books` | 새로운 이야기 시작 (방 만들기) | User |
+| GET | `/api/books` | 이야기 목록 조회 (필터링) | All |
+| POST | `/api/books/{bookId}/sentences` | 문장 이어 쓰기 (핵심 기능) | User |
+| GET | `/api/books/{bookId}` | 소설 상세 조회 (문장 전체) | All |
+| POST | `/api/books/{bookId}/votes` | 소설 개추/비추 (LIKE/DISLIKE) | User |
+
 <br>
 
-8. ⚙️ 프로젝트 컨벤션 (Convention)
-Commit Message
+## 8. ⚙️ 프로젝트 컨벤션 (Convention)
 
-feat: 새로운 기능 추가
+### Commit Message
+*   `feat`: 새로운 기능 추가
+*   `fix`: 버그 수정
+*   `docs`: 문서 수정
+*   `style`: 코드 포맷팅, 세미콜론 누락 등 (로직 변경 X)
+*   `refactor`: 코드 리팩토링
+*   `test`: 테스트 코드 추가
+*   `chore`: 빌드 업무, 패키지 매니저 수정
 
-fix: 버그 수정
+### Branch Strategy
+*   `main`: 배포 가능한 안정 버전
+*   `develop`: 개발 중인 최신 버전
+*   `feature/{domain}/{function}`: 기능 단위 개발 브랜치
+    *   Ex) `feature/member/login`, `feature/book/create`
 
-docs: 문서 수정
+<br>
 
-style: 코드 포맷팅, 세미콜론 누락 등 (로직 변경 X)
-
-refactor: 코드 리팩토링
-
-test: 테스트 코드 추가
-
-chore: 빌드 업무, 패키지 매니저 수정
-
-Branch Strategy
-
-main: 배포 가능한 안정 버전
-
-develop: 개발 중인 최신 버전
-
-feature/{domain}/{function}: 기능 단위 개발 브랜치
-
-Ex) feature/member/login, feature/book/create
-
-Copyright © 2026 Team Next Page. All rights reserved.
-
-code
-Code
-download
-content_copy
-expand_less
+---
+Copyright © 2026 **Team Next Page**. All rights reserved.
