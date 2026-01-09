@@ -21,13 +21,19 @@
 |:---:|:---:|:---|
 | **정진호** | **Team Leader** | **🏛 Core & Architecture**<br>- 프로젝트 아키텍처 설계 (CQRS 패턴 적용)<br>- `Story` 애그리거트 상태 관리 및 순서 제어 로직<br>- 전역 예외 처리 및 공통 응답 포맷 정의 |
 | **김태형** | **Sub Leader** | **🔐 Member & Auth**<br>- Spring Security 기반 인증/인가 (회원가입, 로그인)<br>- **Soft Delete**를 적용한 안전한 회원 탈퇴 처리<br>- 마이페이지 (내 서재, 프로필 관리) |
-| **최현지** | **Core Dev** | **✍️ Writing (Command)**<br>- 문장 작성(Append) 비즈니스 로직 구현<br>- 연속 작성 방지 및 입력 데이터 유효성 검사(Validation)<br>- 이야기 완결(State Transition) 처리 |
-| **윤성원** | **Core Dev** | **📖 Reading (Query)**<br>- 소설 조회 및 검색 최적화 (Read Model 설계)<br>- 장르별/인기별 필터링 및 페이징 처리<br>- 완성된 소설 '책 뷰' 렌더링 API |
+| **최현지** | **Core Dev** | **✍️ Writing (Command) & 📖 Reading (Query)**<br>- 문장 작성(Append) 및 유효성 검사, 이야기 완결 처리<br>- 소설 조회 및 검색 최적화, 필터링 및 페이징 처리<br>- 완성된 소설 '책 뷰' 렌더링 API |
 | **정병진** | **Developer** | **❤️ Reaction & Support**<br>- 문장/소설 투표(LIKE/DISLIKE) 기능<br>- 소설 감상평(댓글) CRUD (문장 댓글 제외)<br>- UI/UX 인터랙션 요소 개발 지원 |
 
 <br>
 
 ## 3. 🛠️ 기술 스택 (Tech Stack)
+
+### 💻 개발 환경 (Development Environment)
+*   **IDE:** IntelliJ IDEA
+*   **JDK:** Java 17 (Amazon Corretto or Azul Zulu)
+*   **Database:** MariaDB 10.6+
+*   **Build Tool:** Gradle
+*   **Framework:** Spring Boot 3.5.9
 
 ### Backend
 ![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
