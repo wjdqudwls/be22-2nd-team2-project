@@ -4,6 +4,8 @@
 
 <br>
 
+# 🚀 Part 1. 프로젝트 소개
+
 ## 1. 📝 프로젝트 소개
 **Next Page**는 한 사람이 모든 이야기를 쓰는 것이 아니라, 여러 사용자가 **문장 단위로 이어 쓰며 하나의 소설을 완성**하는 릴레이 창작 서비스입니다.
 
@@ -285,7 +287,7 @@ erDiagram
 
 <br>
 
-## 6. 💾 Database Schema (DDL)
+## 7. 💾 Database Schema (DDL)
 
 프로젝트 초기 설정을 위한 MariaDB DDL 스크립트입니다.
 
@@ -381,7 +383,7 @@ CREATE TABLE `sentence_votes` (
 
 <br>
 
-## 7. 🔌 API 명세 (Endpoint Example)
+## 8. 🔌 API 명세 (Endpoint Example)
 
 | Method | URI | 설명 | 권한 |
 |:---:|:---|:---|:---:|
@@ -395,9 +397,100 @@ CREATE TABLE `sentence_votes` (
 
 <br>
 
-## 8. ⚙️ 프로젝트 컨벤션 (Convention)
+<br>
 
-### Commit Message
+# 🛠️ Part 2. 개발자 가이드 (Developer Guidelines)
+> **"우리는 하나의 원칙 아래 코드를 작성합니다."**
+이 섹션은 Next Page 프로젝트에 참여하는 모든 개발자(및 AI 어시스턴트)가 준수해야 할 핵심 컨벤션과 가이드라인입니다.
+
+## 1. 🏛️ 코딩 컨벤션 및 패턴
+
+### 1.1 Entity & Domain Logic (DDD)
+*   **Setter 사용 금지:** Entity에는 `@Setter`를 절대 사용하지 않는다. 상태 변경은 명확한 의도를 가진 메서드(Business Method)로 구현한다.
+    *   *Bad:* `book.setStatus("COMPLETED");`
+    *   *Good:* `book.completeStory();`
+*   **생성자:** `@NoArgsConstructor(access = AccessLevel.PROTECTED)`를 기본으로 사용하며, 필요한 필드만 받는 `@Builder`를 별도로 구현한다.
+*   **도메인 로직 위치:** 비즈니스 규칙은 Service가 아닌 **Entity 내부**에 위치시킨다.
+    *   Ex) '다음 순서인지 확인', '소설 완결 조건 체크' 등은 Entity 메서드로 구현.
+
+### 1.2 Layered Architecture Rules
+*   **Controller:** 요청값 검증(`@Valid`), 응답 변환(Representation)만 담당. 로직 포함 금지.
+*   **Service:** 트랜잭션 관리(`@Transactional`) 및 도메인 객체 간의 협력 조율(Orchestration).
+    *   순수 비즈니스 로직은 Entity에 위임하고, Service는 그것을 호출하는 형태.
+*   **DTO:**
+    *   Entity를 직접 반환하지 않는다 (**Strict Rule**).
+    *   Request/Response DTO는 `record` 또는 `static class`로 정의하여 불변성을 유지 권장.
+    *   JPA Entity <-> DTO 변환은 `ModelMapper`나 생성자/Builder 패턴 사용.
+
+### 1.3 CQRS 구현 규칙
+*   **Command (쓰기):**
+    *   Repository: `JpaRepository` 상속.
+    *   복잡한 연관관계 매핑 및 생명주기가 같은 애그리거트는 JPA Cascade 활용.
+*   **Query (읽기):**
+    *   Mapper: `MyBatis` Mapper Interface 사용 (`@Mapper`).
+    *   XML 위치: `resources/mapper/**/*.xml`.
+    *   쿼리 결과는 Entity가 아닌 **조회 전용 DTO**로 즉시 매핑.
+
+### 1.4 공통 필드 및 응답
+*   **BaseEntity:** `created_at`, `updated_at` 등 공통 감사(Audit) 필드는 `@MappedSuperclass`로 관리.
+*   **API Response:** 성공/실패 여부를 포함한 공통 래퍼(Wrapper) 클래스 사용 (프로젝트 내 정의된 포맷 준수).
+
+### 1.5 Security & JWT
+*   **Authentication:** `Bearer` Token 방식 사용. Header의 `Authorization` 필드 파싱.
+
+<br>
+
+## 2. 📦 패키지 구조 (Package Structure)
+`com.team2.nextpage` 패키지 하위에 **Command(JPA)** 와 **Query(MyBatis)**, 그리고 **Common** 영역으로 나누어 설계했습니다.
+
+```text
+src/main/java/com/team2/nextpage
+├── 📂 common                  // 공통 모듈 (정진호)
+│   ├── 📂 entity              // BaseEntity 등
+│   ├── 📂 error               // ErrorCode, Exception 클래스
+│   ├── 📂 exception           // GlobalExceptionHandler
+│   └── 📂 response            // ApiResponse
+├── 📂 command                 // [CUD] JPA 영역
+│   ├── 📂 member              // 회원 (김태형)
+│   │   ├── 📂 controller
+│   │   ├── 📂 service
+│   │   ├── 📂 repository
+│   │   ├── 📂 entity          // DB Tables (Domain)
+│   │   └── 📂 dto             // Request DTO
+│   ├── 📂 book                // 소설 (최현지)
+│   │   ├── 📂 controller
+│   │   ├── 📂 service
+│   │   ├── 📂 repository
+│   │   ├── 📂 entity
+│   │   └── 📂 dto
+│   └── 📂 reaction            // 반응 (정병진)
+│       ├── 📂 controller
+│       ├── 📂 service
+│       ├── 📂 repository
+│       ├── 📂 entity
+│       └── 📂 dto
+└── 📂 query                   // [R] MyBatis 영역
+    ├── 📂 member              // 회원 조회 (김태형)
+    │   ├── 📂 controller
+    │   ├── 📂 service
+    │   ├── 📂 mapper          // MyBatis Interface
+    │   └── 📂 dto             // Response DTO
+    ├── 📂 book                // 소설 조회 (최현지)
+    └── 📂 reaction            // 반응 조회 (정병진)
+```
+
+<br>
+
+## 3. 🤝 협업 컨벤션 (Collaboration)
+
+### 🌳 Branch Strategy
+*   `main`: 배포 가능한 안정 버전
+*   `develop`: 개발 중인 최신 버전
+*   `feature/{domain}/{function}`: 기능 단위 개발 브랜치
+    *   Ex) `feature/member/login`, `feature/book/create`
+
+### 💬 Commit Message Convention
+`type: subject` 형식을 준수합니다.
 *   `feat`: 새로운 기능 추가
 *   `fix`: 버그 수정
 *   `docs`: 문서 수정
@@ -406,60 +499,19 @@ CREATE TABLE `sentence_votes` (
 *   `test`: 테스트 코드 추가
 *   `chore`: 빌드 업무, 패키지 매니저 수정
 
-### Branch Strategy
-*   `main`: 배포 가능한 안정 버전
-*   `develop`: 개발 중인 최신 버전
-*   `feature/{domain}/{function}`: 기능 단위 개발 브랜치
-    *   Ex) `feature/member/login`, `feature/book/create`
-
-### 🌳 SourceTree 사용 가이드 (Branch Workflow)
-소스트리를 사용하여 위 브랜치 전략을 따르는 방법입니다.
-
-1.  **브랜치 생성 (Create Branch)**
-    *   상단 메뉴의 **[브랜치]** 버튼 클릭
-    *   **새 브랜치 이름:** `feature/기능명` 입력 (예: `feature/member/login`)
-    *   **기준 브랜치 (Checkout):** `develop` 선택
-    *   '브랜치 생성' 클릭 (자동으로 해당 브랜치로 체크아웃됨)
-
-2.  **작업 및 커밋 (Commit)**
-    *   코드 수정 후, **파일 상태** 탭에서 스테이지에 올리기
-    *   하단 커밋 메시지 창에 컨벤션에 맞춰 메시지 입력 (예: `feat: 회원가입 기능 구현`)
-    *   **[커밋]** 버튼 클릭
-
-3.  **푸시 (Push)**
-    *   상단 메뉴의 **[푸시]** 버튼 클릭
-    *   현재 작업한 `feature/...` 브랜치 체크 후 푸시 (원격 저장소에 업로드)
-
-4.  **풀 리퀘스트 (Pull Request)**
-    *   GitHub/GitLab 웹사이트로 이동
-    *   `feature/...` 브랜치에서 `develop` 브랜치로 **Merge Request (PR)** 생성
-    *   팀원 리뷰 후 Merge 승인
+### 🌳 SourceTree Workflow
+1.  **브랜치 생성:** `develop`에서 `feature/기능명` 브랜치 생성
+2.  **작업 및 커밋:** 기능 구현 후 `feat: ...` 메시지로 커밋
+3.  **푸시 & PR:** 작업 브랜치 푸시 후 GitHub/GitLab에서 `develop`으로 PR 생성
+4.  **코드 리뷰:** 팀원 리뷰 후 Merge
 
 <br>
 
-
-<br>
-
-## 9. 📦 패키지 구조 (Package Structure)
-`com.team2.nextpage` 패키지 하위에 **Command(JPA)** 와 **Query(MyBatis)**, 그리고 **Common** 영역으로 나누어 설계했습니다.
-
-```text
-com.team2.nextpage
-├── common          # 공통 모듈 (정진호)
-│   ├── BaseEntity.java
-│   ├── ApiResponse.java
-│   └── GlobalExceptionHandler.java
-├── command         # [CUD] JPA 영역 (쓰기, 상태 변경)
-│   ├── member      # 회원 (김태형)
-│   ├── book        # 소설/문장 (최현지)
-│   └── reaction    # 댓글/투표 (정병진)
-└── query           # [R] MyBatis 영역 (조회 전용)
-    ├── member      # 회원 조회 (김태형)
-    ├── book        # 소설 조회 (최현지)
-    └── reaction    # 댓글 조회 (정병진)
-```
-
-<br>
+## 4. 🛠️ 라이브러리 및 도구 활용
+*   **Lombok:** `@Getter`, `@RequiredArgsConstructor`, `@Slf4j` 적극 활용. `@ToString`은 순환 참조 주의(exclude 설정).
+*   **Validation:** `jakarta.validation` 어노테이션(`@NotNull`, `@Size`, `@Email`)으로 입력값 검증 수행.
+*   **Data Type:** 상태값 등은 String 대신 **Enum 사용 권장** (`@Enumerated(EnumType.STRING)`).
+*   **Soft Delete:** `@SQLDelete` 및 `@SQLRestriction` 어노테이션을 사용하여 자동화. (Java 코드는 `delete()` 호출하지만 DB는 `UPDATE` 실행).
 
 ---
 Copyright © 2026 **Team Next Page**. All rights reserved.
