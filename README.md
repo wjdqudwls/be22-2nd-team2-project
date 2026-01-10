@@ -441,22 +441,42 @@ CREATE TABLE `sentence_votes` (
 <br>
 
 ## 9. 📦 패키지 구조 (Package Structure)
-`com.team2.nextpage` 패키지 하위에 **Command(JPA)** 와 **Query(MyBatis)**, 그리고 **Common** 영역으로 나누어 설계했습니다.
+`com.team2.nextpage` 패키지 하위에 **Command(JPA)** 와 **Query(MyBatis)**, 그리고 **Common** 영역으로 나누어 설계했습니다. 요청/응답(DTO)과 계층별 의존성을 명확히 분리합니다.
 
 ```text
-com.team2.nextpage
-├── common          # 공통 모듈 (정진호)
-│   ├── BaseEntity.java
-│   ├── ApiResponse.java
-│   └── GlobalExceptionHandler.java
-├── command         # [CUD] JPA 영역 (쓰기, 상태 변경)
-│   ├── member      # 회원 (김태형)
-│   ├── book        # 소설/문장 (최현지)
-│   └── reaction    # 댓글/투표 (정병진)
-└── query           # [R] MyBatis 영역 (조회 전용)
-    ├── member      # 회원 조회 (김태형)
-    ├── book        # 소설 조회 (최현지)
-    └── reaction    # 댓글 조회 (정병진)
+src/main/java/com/team2/nextpage
+├── 📂 common                  // 공통 모듈 (정진호)
+│   ├── 📂 entity              // BaseEntity 등
+│   ├── 📂 error               // ErrorCode, Exception 클래스
+│   ├── 📂 exception           // GlobalExceptionHandler
+│   └── 📂 response            // ApiResponse
+├── 📂 command                 // [CUD] JPA 영역
+│   ├── 📂 member              // 회원 (김태형)
+│   │   ├── 📂 controller
+│   │   ├── 📂 service
+│   │   ├── 📂 repository
+│   │   ├── 📂 entity          // DB Tables (Domain)
+│   │   └── 📂 dto             // Request DTO
+│   ├── 📂 book                // 소설 (최현지)
+│   │   ├── 📂 controller
+│   │   ├── 📂 service
+│   │   ├── 📂 repository
+│   │   ├── 📂 entity
+│   │   └── 📂 dto
+│   └── 📂 reaction            // 반응 (정병진)
+│       ├── 📂 controller
+│       ├── 📂 service
+│       ├── 📂 repository
+│       ├── 📂 entity
+│       └── 📂 dto
+└── 📂 query                   // [R] MyBatis 영역
+    ├── 📂 member              // 회원 조회 (김태형)
+    │   ├── 📂 controller
+    │   ├── 📂 service
+    │   ├── 📂 mapper          // MyBatis Interface
+    │   └── 📂 dto             // Response DTO
+    ├── 📂 book                // 소설 조회 (최현지)
+    └── 📂 reaction            // 반응 조회 (정병진)
 ```
 
 <br>
