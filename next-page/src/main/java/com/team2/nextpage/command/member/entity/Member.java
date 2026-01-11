@@ -41,10 +41,4 @@ public class Member extends BaseEntity {
     @Column(columnDefinition = "varchar(20) default 'ACTIVE'")
     private UserStatus userStatus; // ACTIVE, DELETED
 
-    /**
-     * 회원 탈퇴 처리
-     */
-    public void deactivate() {
-        this.userStatus = UserStatus.DELETED;
-    }
 }

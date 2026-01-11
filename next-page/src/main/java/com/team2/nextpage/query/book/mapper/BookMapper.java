@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 소설 Query Mapper (검색, 필터링, 페이징 최적화)
  *
- * @author 최현지
+ * @author 정진호
  */
 @Mapper
 public interface BookMapper {

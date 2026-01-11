@@ -17,7 +17,7 @@ import com.team2.nextpage.common.error.ErrorCode;
 /**
  * 소설(Book) 애그리거트 루트
  *
- * @author 최현지
+ * @author 정진호
  */
 @Entity
 @Getter

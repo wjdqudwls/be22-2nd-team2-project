@@ -1,6 +1,13 @@
 package com.team2.nextpage.command.book.service;
 
+import com.team2.nextpage.command.book.dto.request.CreateBookRequest;
+import com.team2.nextpage.command.book.dto.request.SentenceAppendRequest;
+import com.team2.nextpage.command.book.entity.Book;
+import com.team2.nextpage.command.book.entity.Sentence;
 import com.team2.nextpage.command.book.repository.BookRepository;
+import com.team2.nextpage.command.book.repository.SentenceRepository;
+import com.team2.nextpage.common.error.BusinessException;
+import com.team2.nextpage.common.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 소설 Command 서비스 (생성, 문장 작성)
  *
- * @author 최현지
+ * @author 정진호
  */
 @Service
 @Transactional
@@ -16,31 +23,64 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final SentenceRepository sentenceRepository;
 
     /**
      * 소설 방 생성
-     *
-     * [Hint]
-     * 1. 요청 DTO(BookCreateRequest)를 인자로 받습니다.
-     * 2. Book Entity를 생성합니다 (ModelMapper.map() 또는 Book.builder() 활용).
-     * 3. 저장 후 생성된 Book ID를 반환합니다.
      */
-    public Long createBook(/* BookCreateRequest request */) {
-        // TODO: 최현지 구현 필요
-        return null;
+    public Long createBook(Long writerId, CreateBookRequest request) {
+        // 1. Book 생성
+        Book book = Book.builder()
+                .writerId(writerId)
+                .categoryId(request.getCategoryId())
+                .title(request.getTitle())
+                .maxSequence(request.getMaxSequence())
+                .status(com.team2.nextpage.command.book.entity.BookStatus.WRITING)
+                .currentSequence(1) // 1번 문장부터 시작
+                .build();
+
+        Book savedBook = bookRepository.save(book);
+
+        // 2. 첫 문장 자동 등록
+        Sentence firstSentence = Sentence.builder()
+                .book(savedBook)
+                .writerId(writerId)
+                .content(request.getFirstSentence())
+                .sequenceNo(1)
+                .build();
+
+        sentenceRepository.save(firstSentence);
+
+        // 3. 상태 업데이트 (1번 문장 작성 완료 처리 -> 다음은 2번)
+        savedBook.updateStateAfterWriting(writerId);
+
+        return savedBook.getBookId();
     }
 
     /**
      * 문장 이어 쓰기
-     *
-     * [Hint]
-     * 1. Book을 조회합니다. (없으면 예외 발생)
-     * 2. Book.validateWritingPossible(writerId)를 호출하여 도메인 규칙을 검증합니다.
-     * 3. Sentence Entity를 생성합니다 (Sentence.builder()...build() 활용).
-     * 4. Book.updateStateAfterWriting(writerId)를 호출하여 상태를 갱신합니다.
      */
-    public Long appendSentence(Long bookId /* , SentenceAppendRequest request */) {
-        // TODO: 최현지 구현 필요
-        return null;
+    public Long appendSentence(Long bookId, Long writerId, SentenceAppendRequest request) {
+        // 1. 소설 조회
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+
+        // 2. 작성 가능 여부 검증 (도메인 로직)
+        book.validateWritingPossible(writerId);
+
+        // 3. 문장 생성
+        Sentence sentence = Sentence.builder()
+                .book(book)
+                .writerId(writerId)
+                .content(request.getContent())
+                .sequenceNo(book.getCurrentSequence())
+                .build();
+
+        sentenceRepository.save(sentence);
+
+        // 4. 소설 상태 업데이트 (순서 증가, 마지막 작성자 갱신, 완결 체크)
+        book.updateStateAfterWriting(writerId);
+
+        return sentence.getSentenceId();
     }
 }

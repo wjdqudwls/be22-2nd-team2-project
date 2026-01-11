@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team2.nextpage.query.book.mapper.BookMapper">
+
+    <select id="findAllBooks" resultType="com.team2.nextpage.query.book.dto.response.BookDto">
+        SELECT 
+            b.book_id,
+            b.writer_id,
+            b.category_id,
+            b.title,
+            b.status,
+            b.current_sequence,
+            b.max_sequence,
+            b.created_at
+        FROM books b
+        ORDER BY b.created_at DESC
+    </select>
+
+    <select id="findBookDetail" parameterType="long" resultType="com.team2.nextpage.query.book.dto.response.BookDto">
+        SELECT 
+            b.book_id,
+            b.writer_id,
+            b.category_id,
+            b.title,
+            b.status,
+            b.current_sequence,
+            b.max_sequence,
+            b.created_at
+        FROM books b
+        WHERE b.book_id = #{bookId}
+    </select>
+
+</mapper>

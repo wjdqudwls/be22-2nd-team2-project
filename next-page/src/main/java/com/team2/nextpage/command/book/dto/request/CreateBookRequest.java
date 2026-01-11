@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 /**
  * 소설 생성 요청 DTO
  *
- * @author 최현지
+ * @author 정진호
  */
 @Getter
 @NoArgsConstructor

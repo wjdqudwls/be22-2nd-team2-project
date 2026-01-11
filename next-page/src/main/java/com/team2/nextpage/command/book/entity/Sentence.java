@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 /**
  * 문장(Sentence) 엔티티
  *
- * @author 최현지
+ * @author 정진호
  */
 @Entity
 @Getter
@@ -24,6 +24,9 @@ public class Sentence extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sentenceId;
+
+    @Column(name = "writer_id")
+    private Long writerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")

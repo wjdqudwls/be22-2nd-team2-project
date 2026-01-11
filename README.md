@@ -39,9 +39,8 @@
 
 | 이름 | 포지션 | 담당 도메인 & 핵심 역할 |
 |:---:|:---:|:---|
-| **정진호** | **Team Leader** | **🏛 Core & Architecture**<br>- 프로젝트 아키텍처 설계 (CQRS 패턴 적용)<br>- `Story` 애그리거트 상태 관리 및 순서 제어 로직<br>- 전역 예외 처리 및 공통 응답 포맷 정의 |
+| **정진호** | **Team Leader** | **🏛 Core & Architecture**<br>- 프로젝트 아키텍처 설계 (CQRS 패턴 적용)<br>- `Story` 애그리거트 상태 관리 및 순서 제어 로직<br>- 전역 예외 처리 및 공통 응답 포맷 정의<br>**✍️ Writing (Command) & 📖 Reading (Query)**<br>- 문장 작성(Append) 및 유효성 검사, 이야기 완결 처리<br>- 소설 조회 및 검색 최적화, 필터링 및 페이징 처리<br>- 완성된 소설 '책 뷰' 렌더링 API |
 | **김태형** | **Sub Leader** | **🔐 Member & Auth**<br>- Spring Security 기반 인증/인가 (회원가입, 로그인)<br>- **Soft Delete**를 적용한 안전한 회원 탈퇴 처리<br>- 마이페이지 (내 서재, 프로필 관리) |
-| **최현지** | **Core Dev** | **✍️ Writing (Command) & 📖 Reading (Query)**<br>- 문장 작성(Append) 및 유효성 검사, 이야기 완결 처리<br>- 소설 조회 및 검색 최적화, 필터링 및 페이징 처리<br>- 완성된 소설 '책 뷰' 렌더링 API |
 | **정병진** | **Developer** | **❤️ Reaction & Support**<br>- 문장/소설 투표(LIKE/DISLIKE) 기능<br>- 소설 감상평(댓글) CRUD (문장 댓글 제외)<br>- UI/UX 인터랙션 요소 개발 지원 |
 
 <br>
@@ -407,10 +406,12 @@ CREATE TABLE `sentence_votes` (
 |:---:|:---|:---|:---:|
 | POST | `/api/auth/signup` | 신규 작가 등록 (회원가입) | All |
 | POST | `/api/auth/login` | 로그인 | All |
+| POST | `/api/auth/logout` | 로그아웃 | User |
 | POST | `/api/books` | 새로운 이야기 시작 (방 만들기) | User |
-| GET | `/api/books` | 이야기 목록 조회 (필터링) | All |
+| GET | `/api/books` | 이야기 목록 조회 (필터링, 검색, 페이징) | All |
+| GET | `/api/books/{bookId}` | 소설 상세 조회 (문장 전체 리스트) | All |
 | POST | `/api/books/{bookId}/sentences` | 문장 이어 쓰기 (핵심 기능) | User |
-| GET | `/api/books/{bookId}` | 소설 상세 조회 (문장 전체) | All |
+| GET | `/api/books/{bookId}/view` | 완결 소설 책 뷰어 모드 조회 | All |
 | POST | `/api/books/{bookId}/votes` | 소설 개추/비추 (LIKE/DISLIKE) | User |
 
 <br>
@@ -520,6 +521,9 @@ src/main/java/com/team2/nextpage
 │   ├── 📂 error               // ErrorCode, Exception 클래스
 │   ├── 📂 exception           // GlobalExceptionHandler
 │   └── 📂 response            // ApiResponse
+├── 📂 config                  // 설정 (정진호)
+│   ├── SecurityConfig
+│   └── ModelMapperConfig
 ├── 📂 command                 // [CUD] JPA 영역
 │   ├── 📂 member              // 회원 (김태형)
 │   │   ├── 📂 controller
@@ -527,7 +531,7 @@ src/main/java/com/team2/nextpage
 │   │   ├── 📂 repository
 │   │   ├── 📂 entity          // DB Tables (Domain)
 │   │   └── 📂 dto             // Request DTO
-│   ├── 📂 book                // 소설 (최현지)
+│   ├── 📂 book                // 소설 (정진호)
 │   │   ├── 📂 controller
 │   │   ├── 📂 service
 │   │   ├── 📂 repository
@@ -545,7 +549,7 @@ src/main/java/com/team2/nextpage
     │   ├── 📂 service
     │   ├── 📂 mapper          // MyBatis Interface
     │   └── 📂 dto             // Response DTO
-    ├── 📂 book                // 소설 조회 (최현지)
+    ├── 📂 book                // 소설 조회 (정진호)
     └── 📂 reaction            // 반응 조회 (정병진)
 ```
 
