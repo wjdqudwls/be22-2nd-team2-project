@@ -68,7 +68,7 @@ public class ReactionService {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
 
-    // 권한 체크 (타인 댓글 수장/삭제 불가 예외 처리)
+    // 권한 체크 (타인 댓글 수정/삭제 불가 예외 처리)
     validateWriter(comment, SecurityUtil.getCurrentUserId());
 
     commentRepository.delete(comment);
