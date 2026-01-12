@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 /**
  * 회원 Command 서비스 (회원가입, 탈퇴 등)
  *
@@ -30,14 +29,14 @@ public class MemberService {
 
   /* USER 등록 */
   public void registUser(SignUpRequest memberCreateRequest) {
-    if (memberRepository.findByUserEmail(memberCreateRequest.userEmail()).isPresent()) {
+    if (memberRepository.findByUserEmail(memberCreateRequest.getUserEmail()).isPresent()) {
       throw new RuntimeException("이미 존재하는 아이디(이메일)입니다.");
     }
 
     Member member = Member.builder()
-        .userEmail(memberCreateRequest.userEmail())
-        .userPw(passwordEncoder.encode(memberCreateRequest.userPw()))
-        .userNicknm(memberCreateRequest.userNicknm())
+        .userEmail(memberCreateRequest.getUserEmail())
+        .userPw(passwordEncoder.encode(memberCreateRequest.getUserPw()))
+        .userNicknm(memberCreateRequest.getUserNicknm())
         .userRole(UserRole.USER)
         .userStatus(UserStatus.ACTIVE)
         .build();
@@ -47,14 +46,14 @@ public class MemberService {
 
   /* ADMIN 등록 */
   public void registAdmin(SignUpRequest memberCreateRequest) {
-    if (memberRepository.findByUserEmail(memberCreateRequest.userEmail()).isPresent()) {
+    if (memberRepository.findByUserEmail(memberCreateRequest.getUserEmail()).isPresent()) {
       throw new RuntimeException("이미 존재하는 아이디(이메일)입니다.");
     }
 
     Member member = Member.builder()
-        .userEmail(memberCreateRequest.userEmail())
-        .userPw(passwordEncoder.encode(memberCreateRequest.userPw()))
-        .userNicknm(memberCreateRequest.userNicknm())
+        .userEmail(memberCreateRequest.getUserEmail())
+        .userPw(passwordEncoder.encode(memberCreateRequest.getUserPw()))
+        .userNicknm(memberCreateRequest.getUserNicknm())
         .userRole(UserRole.ADMIN)
         .userStatus(UserStatus.ACTIVE)
         .build();

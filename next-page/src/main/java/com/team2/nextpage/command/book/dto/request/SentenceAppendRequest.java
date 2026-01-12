@@ -6,6 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 문장 이어쓰기 요청 DTO
+ * 릴레이 소설에 문장을 추가할 때 사용됩니다.
+ *
+ * @author 정진호
+ */
 @Getter
 @NoArgsConstructor
 public class SentenceAppendRequest {

@@ -12,13 +12,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * JWT 인증 진입점
+ * 401 Unauthorized 에러 처리 (인증되지 않은 사용자가 보호된 리소스에 접근할 때)
+ *
+ * @author 정진호
+ */
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   // 401 Unauthorized 에러 처리 (인증되지 않은 사용자가 보호된 리소스에 접근할 때)
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
-                       AuthenticationException authException) throws IOException, ServletException {
+      AuthenticationException authException) throws IOException, ServletException {
     // 응답 컨텐츠 타입 설정 (JSON)
     response.setContentType("application/json;charset=UTF-8");
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -35,4 +41,3 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     mapper.writeValue(response.getOutputStream(), data);
   }
 }
-

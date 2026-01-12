@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 /**
  * JWT 토큰 생성 및 검증을 담당하는 Provider 클래스
  * Access Token과 Refresh Token을 발급하고, 토큰의 유효성을 검증합니다.
+ *
+ * @author 정진호
  */
 @Slf4j
 @Component

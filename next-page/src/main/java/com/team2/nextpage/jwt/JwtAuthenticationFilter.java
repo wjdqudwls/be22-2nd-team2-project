@@ -18,6 +18,8 @@ import java.io.IOException;
 /**
  * JWT 인증을 처리하는 Filter
  * 요청 헤더에서 JWT 토큰을 추출하고 검증하여 SecurityContext에 인증 정보를 설정합니다.
+ *
+ * @author 정진호
  */
 @Slf4j
 @Component

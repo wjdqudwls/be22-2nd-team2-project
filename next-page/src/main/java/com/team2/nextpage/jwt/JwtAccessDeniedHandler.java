@@ -12,13 +12,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * JWT 접근 거부 핸들러
+ * 403 Forbidden 에러 처리 (필요한 권한이 없는 경우)
+ *
+ * @author 정진호
+ */
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
   // 403 Forbidden 에러 처리 (필요한 권한이 없는 경우)
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
-                     AccessDeniedException accessDeniedException) throws IOException, ServletException {
+      AccessDeniedException accessDeniedException) throws IOException, ServletException {
     // 응답 컨텐츠 타입 설정 (JSON)
     response.setContentType("application/json;charset=UTF-8");
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);

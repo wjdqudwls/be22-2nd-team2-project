@@ -5,20 +5,22 @@
 <br>
 
 ## 📑 목차
-1. [Part 1. 프로젝트 소개](#part-1-프로젝트-소개)
-   - [프로젝트 소개](#1-프로젝트-소개)
-   - [팀원 및 역할 분담](#2-팀원-및-역할-분담-team-next-page)
-   - [기술 스택](#3-기술-스택-tech-stack)
-   - [주요 기능](#4-주요-기능-key-features)
-   - [요구사항 및 유스케이스](#5-요구사항-및-유스케이스-requirements--use-case)
-   - [ERD 설계](#6-erd-설계-entity-relationship)
-   - [Database Schema](#7-database-schema-ddl)
-   - [API 명세](#8-api-명세-endpoint-example)
-   - [패키지 구조](#9-패키지-구조-package-structure)
-2. [Part 2. 개발자 가이드](#part-2-개발자-가이드-developer-guidelines)
-   - [코딩 컨벤션 및 패턴](#1-코딩-컨벤션-및-패턴)
-   - [협업 컨벤션](#2-협업-컨벤션-collaboration)
-   - [라이브러리 및 도구 활용](#3-라이브러리-및-도구-활용)
+
+### Part 1. 프로젝트 소개
+1. [프로젝트 소개](#1--프로젝트-소개)
+2. [팀원 및 역할 분담](#2--팀원-및-역할-분담-team-next-page)
+3. [기술 스택](#3-%EF%B8%8F-기술-스택-tech-stack)
+4. [주요 기능](#4--주요-기능-key-features)
+5. [요구사항 및 유스케이스](#5--요구사항-및-유스케이스-requirements--use-case)
+6. [ERD 설계](#6-%EF%B8%8F-erd-설계-entity-relationship)
+7. [Database Schema](#7--database-schema-ddl)
+8. [API 명세](#8--api-명세-endpoint-example)
+9. [패키지 구조](#9--패키지-구조-package-structure)
+
+### Part 2. 개발자 가이드
+1. [코딩 컨벤션 및 패턴](#1-%EF%B8%8F-코딩-컨벤션-및-패턴)
+2. [협업 컨벤션](#2--협업-컨벤션-collaboration)
+3. [라이브러리 및 도구 활용](#3-%EF%B8%8F-라이브러리-및-도구-활용)
 
 <br>
 
@@ -416,62 +418,118 @@ CREATE TABLE `sentence_votes` (
 
 ## 8. 🔌 API 명세 (Endpoint Example)
 
+### 🔐 인증 (Auth) API
+
 | Method | URI | 설명 | 권한 |
 |:---:|:---|:---|:---:|
-| POST | `/api/auth/signup` | 신규 작가 등록 (회원가입) | All |
-| POST | `/api/auth/login` | 로그인 | All |
-| POST | `/api/auth/logout` | 로그아웃 | User |
-| POST | `/api/books` | 새로운 이야기 시작 (방 만들기) | User |
-| GET | `/api/books` | 이야기 목록 조회 (필터링, 검색, 페이징) | All |
+| POST | `/api/auth/signup` | 회원가입 (일반 사용자) | All |
+| POST | `/api/auth/admin` | 관리자 가입 | All |
+| POST | `/api/auth/login` | 로그인 (JWT 토큰 발급) | All |
+| POST | `/api/auth/refresh` | Access Token 갱신 | User |
+| POST | `/api/auth/logout` | 로그아웃 (Refresh Token 무효화) | User |
+
+### 👤 회원 (Member) API
+
+| Method | URI | 설명 | 권한 |
+|:---:|:---|:---|:---:|
+| GET | `/api/members/me` | 마이페이지 조회 | User |
+
+### 📖 소설 (Book) API
+
+| Method | URI | 설명 | 권한 |
+|:---:|:---|:---|:---:|
+| POST | `/api/books` | 새로운 이야기 시작 (소설 생성) | User |
+| GET | `/api/books` | 소설 목록 조회 (필터링, 검색, 페이징) | All |
 | GET | `/api/books/{bookId}` | 소설 상세 조회 (문장 전체 리스트) | All |
-| POST | `/api/books/{bookId}/sentences` | 문장 이어 쓰기 (핵심 기능) | User |
 | GET | `/api/books/{bookId}/view` | 완결 소설 책 뷰어 모드 조회 | All |
-| POST | `/api/books/{bookId}/votes` | 소설 개추/비추 (LIKE/DISLIKE) | User |
+| POST | `/api/books/{bookId}/sentences` | 문장 이어 쓰기 (릴레이 핵심 기능) | User |
+
+### ❤️ 반응 (Reaction) API
+
+| Method | URI | 설명 | 권한 |
+|:---:|:---|:---|:---:|
+| POST | `/api/reactions/comments` | 댓글 등록 | User |
+| PATCH | `/api/reactions/comments/{commentId}` | 댓글 수정 | User |
+| DELETE | `/api/reactions/comments/{commentId}` | 댓글 삭제 | User |
+| GET | `/api/reactions/comments/{bookId}` | 소설별 댓글 목록 조회 | All |
+| POST | `/api/reactions/votes` | 소설/문장 투표 (LIKE/DISLIKE) | User |
 
 <br>
 
 <br>
 
 ## 9. 📦 패키지 구조 (Package Structure)
-`com.team2.nextpage` 패키지 하위에 **Command(JPA)** 와 **Query(MyBatis)**, 그리고 **Common** 영역으로 나누어 설계했습니다. 요청/응답(DTO)과 계층별 의존성을 명확히 분리합니다.
+`com.team2.nextpage` 패키지 하위에 **Auth/JWT**, **Command(JPA)**, **Query(MyBatis)**, **Common**, **Config** 영역으로 나누어 설계했습니다. 요청/응답(DTO)과 계층별 의존성을 명확히 분리합니다.
 
 ```text
 src/main/java/com/team2/nextpage
-├── 📂 common                  // 공통 모듈 (정진호)
-│   ├── 📂 entity              // BaseEntity 등
-│   ├── 📂 error               // ErrorCode, Exception 클래스
-│   ├── 📂 exception           // GlobalExceptionHandler
-│   └── 📂 response            // ApiResponse
-├── 📂 config                  // 설정 (정진호)
-│   ├── SecurityConfig
-│   └── ModelMapperConfig
-├── 📂 command                 // [CUD] JPA 영역
-│   ├── 📂 member              // 회원 (김태형)
-│   │   ├── 📂 controller
-│   │   ├── 📂 service
-│   │   ├── 📂 repository
-│   │   ├── 📂 entity          // DB Tables (Domain)
-│   │   └── 📂 dto             // Request DTO
-│   ├── 📂 book                // 소설 (정진호)
-│   │   ├── 📂 controller
-│   │   ├── 📂 service
-│   │   ├── 📂 repository
-│   │   ├── 📂 entity
-│   │   └── 📂 dto
-│   └── 📂 reaction            // 반응 (정병진)
-│       ├── 📂 controller
-│       ├── 📂 service
-│       ├── 📂 repository
-│       ├── 📂 entity
-│       └── 📂 dto
-└── 📂 query                   // [R] MyBatis 영역
-    ├── 📂 member              // 회원 조회 (김태형)
-    │   ├── 📂 controller
-    │   ├── 📂 service
-    │   ├── 📂 mapper          // MyBatis Interface
-    │   └── 📂 dto             // Response DTO
-    ├── 📂 book                // 소설 조회 (정진호)
-    └── 📂 reaction            // 반응 조회 (정병진)
+│
+├── 📄 NextPageApplication.java   // 메인 애플리케이션 진입점
+│
+├── 📂 auth                       // 🔐 인증 모듈 (김태형)
+│   ├── 📂 controller             // AuthController (로그인, 로그아웃, 토큰 갱신)
+│   ├── 📂 service                // AuthService, CustomUserDetailsService
+│   ├── 📂 repository             // AuthRepository (RefreshToken)
+│   ├── 📂 entity                 // RefreshToken
+│   └── 📂 dto                    // LoginRequest, TokenResponse
+│
+├── 📂 jwt                        // 🔑 JWT 토큰 모듈 (정진호)
+│   ├── 📄 JwtTokenProvider.java  // 토큰 생성/검증
+│   ├── 📄 JwtAuthenticationFilter.java
+│   ├── 📄 JwtAccessDeniedHandler.java
+│   ├── 📄 JwtAuthenticationEntryPoint.java
+│   └── 📂 dto                    // JwtTokenResponse
+│
+├── 📂 config                     // ⚙️ 설정 (정진호)
+│   ├── 📄 SecurityConfig.java    // Spring Security 설정
+│   ├── 📄 SwaggerConfig.java     // OpenAPI/Swagger 설정
+│   ├── 📄 WebMvcConfig.java      // CORS, 리소스 핸들러
+│   ├── 📄 ModelMapperConfig.java
+│   └── 📂 security               // CustomUserDetails, CustomUserDetailsService
+│
+├── 📂 common                     // 🧰 공통 모듈 (정진호)
+│   ├── 📂 entity                 // BaseEntity
+│   ├── 📂 error                  // ErrorCode, BusinessException
+│   ├── 📂 exception              // GlobalExceptionHandler
+│   ├── 📂 response               // ApiResponse
+│   └── 📂 util                   // SecurityUtil
+│
+├── 📂 command                    // ✏️ [CUD] JPA 영역
+│   ├── 📂 member                 // 👤 회원 (김태형)
+│   │   ├── 📂 controller         // MemberController
+│   │   ├── 📂 service            // MemberService
+│   │   ├── 📂 repository         // MemberRepository
+│   │   ├── 📂 entity             // Member, UserRole, UserStatus
+│   │   └── 📂 dto/request        // SignUpRequest
+│   ├── 📂 book                   // 📖 소설 (정진호)
+│   │   ├── 📂 controller         // BookController
+│   │   ├── 📂 service            // BookService
+│   │   ├── 📂 repository         // BookRepository, SentenceRepository
+│   │   ├── 📂 entity             // Book, Sentence, BookStatus
+│   │   └── 📂 dto/request        // CreateBookRequest, SentenceAppendRequest
+│   └── 📂 reaction               // ❤️ 반응 (정병진)
+│       ├── 📂 controller         // ReactionController
+│       ├── 📂 service            // ReactionService
+│       ├── 📂 repository         // CommentRepository, BookVoteRepository, SentenceVoteRepository
+│       ├── 📂 entity             // Comment, BookVote, SentenceVote, VoteType
+│       └── 📂 dto/request        // CreateCommentRequest, UpdateCommentRequest
+│
+└── 📂 query                      // 📖 [R] MyBatis 영역
+    ├── 📂 member                 // 👤 회원 조회 (김태형)
+    │   ├── 📂 controller         // MemberQueryController
+    │   ├── 📂 service            // MemberQueryService
+    │   ├── 📂 mapper             // MemberMapper (MyBatis Interface)
+    │   └── 📂 dto/response       // MemberDto
+    ├── 📂 book                   // 📖 소설 조회 (정진호)
+    │   ├── 📂 controller         // BookQueryController
+    │   ├── 📂 service            // BookQueryService
+    │   ├── 📂 mapper             // BookMapper
+    │   └── 📂 dto/response       // BookDto
+    └── 📂 reaction               // ❤️ 반응 조회 (정병진)
+        ├── 📂 controller         // ReactionQueryController
+        ├── 📂 service            // ReactionQueryService
+        ├── 📂 mapper             // ReactionMapper
+        └── 📂 dto/response       // CommentDto
 ```
 
 <br>

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Spring Security 사용자 인증을 위한 UserDetailsService 구현
  * 이메일을 통해 데이터베이스에서 사용자 정보를 조회합니다.
+ *
+ * @author 정진호
  */
 @Slf4j
 @Service

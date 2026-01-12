@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * 소설 Command Repository
  *
- * @author 최현지
+ * @author 정진호
  */
 public interface BookRepository extends JpaRepository<Book, Long> {
 }

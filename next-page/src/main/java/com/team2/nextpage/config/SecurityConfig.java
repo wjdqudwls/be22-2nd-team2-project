@@ -18,6 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /**
  * Spring Security 설정
  * JWT 기반 인증/인가 처리 및 엔드포인트별 접근 권한 관리
+ *
+ * @author 정진호
  */
 @Configuration
 @EnableWebSecurity

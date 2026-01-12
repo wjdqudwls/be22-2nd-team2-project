@@ -7,6 +7,8 @@ import lombok.Getter;
 /**
  * JWT 토큰 응답 DTO
  * 로그인 성공 시 클라이언트에게 반환되는 토큰 정보
+ *
+ * @author 정진호
  */
 @Getter
 @Builder

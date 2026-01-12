@@ -13,6 +13,8 @@ import java.util.Collections;
 /**
  * Spring Security UserDetails 구현체
  * Member 엔티티를 Spring Security가 이해할 수 있는 형태로 래핑
+ *
+ * @author 정진호
  */
 @Getter
 @RequiredArgsConstructor

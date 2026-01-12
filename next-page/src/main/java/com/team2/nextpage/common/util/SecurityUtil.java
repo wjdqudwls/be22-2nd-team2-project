@@ -6,6 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Spring Security Context에서 현재 인증된 사용자 정보를 편리하게 가져오는 유틸리티 클래스
+ *
+ * @author 정진호
  */
 public class SecurityUtil {
 
