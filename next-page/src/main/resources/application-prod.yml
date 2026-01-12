@@ -1,0 +1,21 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # 운영 환경에서는 DDL 변경 금지
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    com.team2.nextpage: WARN
+    org.springframework.security: WARN
+
+# JWT Secret 설정
+jwt:
+  secret: ${JWT_SECRET:0b9e53ea3228c51635b0ee816888ba580e00dcd961d0d9c976a2f40dcf57bcfd}

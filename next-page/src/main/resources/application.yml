@@ -1,8 +1,9 @@
 spring:
   application:
     name: next-page
+  profiles:
+    active: local
   datasource:
-    # MariaDB Driver
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/next_page_db
     username: swcamp
@@ -16,8 +17,18 @@ spring:
         format_sql: true
 
 mybatis:
-  # Location of Mapper XML files
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
-    # Auto-map snake_case columns to camelCase properties
     map-underscore-to-camel-case: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:0b9e53ea3228c51635b0ee816888ba580e00dcd961d0d9c976a2f40dcf57bcfd}
+  access-token-validity-in-seconds: 3600      # 1시간
+  refresh-token-validity-in-seconds: 604800   # 7일
+
+# Logging
+logging:
+  level:
+    com.team2.nextpage: DEBUG
+    org.springframework.security: DEBUG

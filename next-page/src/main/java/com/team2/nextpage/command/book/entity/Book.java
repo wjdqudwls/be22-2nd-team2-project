@@ -52,6 +52,7 @@ public class Book extends BaseEntity {
     @Column(name = "last_writer_user_id")
     private Long lastWriterUserId;
 
+    @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<Sentence> sentences = new ArrayList<>();
 

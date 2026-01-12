@@ -1,2 +1,116 @@
+# ================================
+# Next Page Project .gitignore
+# ================================
+
+# ===== AI Guidelines (팀 규칙) =====
 AI_GUIDELINES.md
+
+# ===== Gradle =====
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===== IDE - IntelliJ IDEA =====
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# ===== IDE - Eclipse =====
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# ===== IDE - VS Code =====
 .vscode/
+
+# ===== IDE - NetBeans =====
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===== Java =====
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# ===== OS Files =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===== Log Files =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Environment & Secrets =====
+*.env
+.env.local
+.env.*.local
+application-secret.yml
+application-local-secret.yml
+**/secret*.yml
+**/secret*.properties
+
+# ===== Test & Coverage =====
+/coverage/
+*.lcov
+.nyc_output/
+
+# ===== Temp Files =====
+*.tmp
+*.temp
+*.swp
+*~
+
+# ===== H2 Database =====
+*.db
+*.mv.db
+*.trace.db
+
+# ===== Upload Files =====
+uploads/
+!uploads/.gitkeep
+
+# ===== Generated Files =====
+generated/
+/src/main/generated/
+/src/test/generated/
+
+# ===== Node (if frontend exists) =====
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ===== Misc =====
+*.bak
+*.orig

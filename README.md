@@ -252,55 +252,67 @@ erDiagram
     sentences ||--o{ sentence_votes : has
 
     users {
-        int user_id PK
-        varchar user_email
-        varchar user_nicknm
-        varchar user_status "ACTIVE/DELETED"
+        int user_id PK "AUTO_INCREMENT"
+        varchar(100) user_email UK "로그인 ID"
+        varchar(255) user_pw "비밀번호"
+        varchar(50) user_nicknm UK "닉네임"
+        varchar(20) user_role "USER/ADMIN"
+        varchar(20) user_status "ACTIVE/DELETED"
+        datetime left_at "탈퇴일시"
+        datetime created_at
+        datetime updated_at
+    }
+    
+    categories {
+        varchar(20) category_id PK "THRILLER, ROMANCE"
+        varchar(50) category_nm
     }
     
     books {
-        int book_id PK
+        int book_id PK "AUTO_INCREMENT"
         int writer_id FK
-        varchar category_id FK
-        int last_writer_id FK
-        string status "WRITING/COMPLETED"
-    }
-
-    sentences {
-        int sentence_id PK
-        int book_id FK
-        int writer_id FK
-        int sequence_no
-    }
-    
-    book_votes {
-        int vote_id PK
-        int book_id FK
-        int voter_id FK
-        varchar vote_type "LIKE/DISLIKE"
-        datetime created_at
-    }
-
-    sentence_votes {
-        int vote_id PK
-        int sentence_id FK
-        int voter_id FK
-        varchar vote_type "LIKE/DISLIKE"
-        datetime created_at
-    }
-
-    comments {
-        int comment_id PK
-        int book_id FK
-        int writer_id FK
-        text content
+        varchar(20) category_id FK
+        varchar(200) title
+        varchar(20) status "WRITING/COMPLETED"
+        int current_sequence "현재 문장 순서"
+        int max_sequence "최대 문장 수"
+        int last_writer_user_id "연속 작성 방지"
         datetime created_at
         datetime updated_at
     }
 
-    categories {
-        varchar category_id PK
-        varchar category_nm
+    sentences {
+        int sentence_id PK "AUTO_INCREMENT"
+        int book_id FK
+        int writer_id FK
+        text content "문장 내용"
+        int sequence_no "순서 번호"
+        datetime created_at
+    }
+    
+    comments {
+        int comment_id PK "AUTO_INCREMENT"
+        int book_id FK
+        int writer_id FK
+        text content "댓글 내용"
+        datetime created_at
+        datetime updated_at
+    }
+    
+    book_votes {
+        int vote_id PK "AUTO_INCREMENT"
+        int book_id FK
+        int voter_id FK
+        varchar(10) vote_type "LIKE/DISLIKE"
+        datetime created_at
+    }
+
+    sentence_votes {
+        int vote_id PK "AUTO_INCREMENT"
+        int sentence_id FK
+        int voter_id FK
+        varchar(10) vote_type "LIKE/DISLIKE"
+        datetime created_at
     }
 ```
 

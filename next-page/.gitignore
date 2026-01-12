@@ -1,11 +1,17 @@
+# ================================
+# Next Page Spring Boot .gitignore
+# ================================
+
 HELP.md
+
+# ===== Gradle =====
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
+# ===== IDE - STS/Eclipse =====
 .apt_generated
 .classpath
 .factorypath
@@ -17,7 +23,7 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### IntelliJ IDEA ###
+# ===== IDE - IntelliJ IDEA =====
 .idea
 *.iws
 *.iml
@@ -26,12 +32,56 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
+# ===== IDE - NetBeans =====
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
+# ===== IDE - VS Code =====
 .vscode/
+
+# ===== Java =====
+*.class
+hs_err_pid*
+replay_pid*
+
+# ===== OS Files =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Log Files =====
+logs/
+*.log
+
+# ===== Environment & Secrets =====
+*.env
+.env.local
+.env.*.local
+application-secret.yml
+application-local-secret.yml
+**/secret*.yml
+**/secret*.properties
+
+# ===== H2 Database =====
+*.db
+*.mv.db
+*.trace.db
+
+# ===== Upload Directory =====
+uploads/
+!uploads/.gitkeep
+
+# ===== Temp Files =====
+*.tmp
+*.temp
+*.swp
+*~
+*.bak
+*.orig
+
+# ===== Generated Sources =====
+/src/main/generated/
+/src/test/generated/
