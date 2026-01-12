@@ -6,10 +6,7 @@ import com.team2.nextpage.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 회원 Command 컨트롤러
@@ -35,5 +32,12 @@ public class MemberController {
   public ResponseEntity<ApiResponse<String>> signupAdmin(@RequestBody @Valid SignUpRequest memberCreateRequest) {
     memberService.registAdmin(memberCreateRequest);
     return ResponseEntity.ok(ApiResponse.success("관리자 가입 성공"));
+  }
+
+  // 3. 회원 탈퇴
+  @DeleteMapping("/withdraw")
+  public ResponseEntity<ApiResponse<Void>> withdraw() {
+    memberService.withdraw();
+    return ResponseEntity.ok(ApiResponse.success());
   }
 }

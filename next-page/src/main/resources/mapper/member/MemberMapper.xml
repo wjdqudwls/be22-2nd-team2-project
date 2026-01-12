@@ -4,10 +4,10 @@
 <mapper namespace="com.team2.nextpage.query.member.mapper.MemberMapper">
   <select id="findByUserEmail" resultType="MemberDto">
     SELECT
-        user_id,
-        user_email,
-        user_nicknm,
-        user_role
+      user_id,
+      user_email,
+      user_nicknm,
+      user_role
     FROM users
     WHERE user_email = #{userEmail}
       AND user_status = 'ACTIVE'
