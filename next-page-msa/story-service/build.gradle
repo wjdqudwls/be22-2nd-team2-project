@@ -1,0 +1,35 @@
+// build.gradle (Domain: Story Service)
+plugins {
+    id 'org.springframework.boot'
+}
+
+// 아티팩트명: storyservice
+tasks.named('bootJar') {
+    archiveFileName = "storyservice.jar"
+}
+
+dependencies {
+    implementation project(':common-module')
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // 실시간 & 데이터
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+    // Documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+    // HATEOAS
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

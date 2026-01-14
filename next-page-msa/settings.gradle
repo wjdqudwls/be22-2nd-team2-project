@@ -1,0 +1,9 @@
+rootProject.name = 'next-page-msa'
+
+include 'common-module'
+include 'discovery-server'
+include 'gateway-server'
+include 'member-service'
+include 'story-service'
+include 'reaction-service'
+include 'config-server'

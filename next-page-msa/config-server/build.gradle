@@ -1,0 +1,14 @@
+// build.gradle (Infra: Config Server)
+plugins {
+    id 'org.springframework.boot'
+}
+
+// 아티팩트명: configserver
+tasks.named('bootJar') {
+    archiveFileName = "configserver.jar"
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-config-server'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+}

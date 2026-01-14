@@ -1,0 +1,30 @@
+plugins { id 'java-library' }
+
+// 아티팩트명: commonmodule
+tasks.named('jar') {
+    archiveFileName = "commonmodule.jar"
+}
+
+dependencies {
+    // Spring Boot Starters
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // ModelMapper (DTO 변환)
+    api 'org.modelmapper:modelmapper:3.2.0'
+
+    // Jackson (JSON 처리)
+    api 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Slf4j Logging
+    api 'org.slf4j:slf4j-api'
+}
+// UTF-8 인코딩 설정
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

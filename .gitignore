@@ -36,6 +36,9 @@ bin/
 # ===== IDE - VS Code =====
 .vscode/
 
+# ===== IDE - Claude Code =====
+.claude/
+
 # ===== IDE - NetBeans =====
 /nbproject/private/
 /nbbuild/

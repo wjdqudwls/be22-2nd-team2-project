@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team2.memberservice.query.member.mapper.MemberMapper">
+
+    <!-- 이메일로 회원 기본 정보 조회 -->
+    <select id="findByUserEmail" resultType="MemberDto">
+        SELECT
+            user_id,
+            user_email,
+            user_nicknm,
+            user_role
+        FROM users
+        WHERE user_email = #{userEmail}
+          AND user_status = 'ACTIVE'
+    </select>
+
+    <!-- 사용자 ID로 생성한 소설 수 조회 -->
+    <select id="countCreatedBooks" resultType="int">
+        SELECT COUNT(*)
+        FROM books
+        WHERE writer_id = #{userId}
+    </select>
+
+    <!-- 사용자 ID로 작성한 문장 수 조회 -->
+    <select id="countWrittenSentences" resultType="int">
+        SELECT COUNT(*)
+        FROM sentences
+        WHERE writer_id = #{userId}
+    </select>
+
+    <!-- 사용자 ID로 작성한 댓글 수 조회 -->
+    <select id="countWrittenComments" resultType="int">
+        SELECT COUNT(*)
+        FROM comments
+        WHERE writer_id = #{userId}
+    </select>
+
+</mapper>

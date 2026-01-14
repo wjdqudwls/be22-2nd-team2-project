@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./gradlew test:*)"
+      "Bash(./gradlew test:*)",
+      "Bash(xargs ls:*)",
+      "Read(//c/Users/playdata2/Desktop/team2/**)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(test:*)",
+      "Bash(./gradlew clean build:*)",
+      "Bash(done)",
+      "Bash(xcopy:*)",
+      "Bash(copy \"c:\\\\Users\\\\playdata2\\\\Desktop\\\\team2\\\\next-page\\\\src\\\\main\\\\java\\\\com\\\\team2\\\\nextpage\\\\config\\\\WebSocketConfig.java\" \"c:\\\\Users\\\\playdata2\\\\Desktop\\\\team2\\\\next-page-msa\\\\story-service\\\\src\\\\main\\\\java\\\\com\\\\team2\\\\storyservice\\\\config\\\\WebSocketConfig.java\")",
+      "Bash(powershell:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew :discovery-server:build:*)",
+      "Bash(./gradlew :gateway-server:build:*)",
+      "Bash(./gradlew :member-service:build:*)",
+      "Bash(./gradlew :story-service:build:*)",
+      "Bash(./gradlew :reaction-service:build:*)",
+      "Bash(./gradlew build:*)"
     ]
   }
 }

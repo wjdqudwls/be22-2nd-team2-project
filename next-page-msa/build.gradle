@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.9'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.team2'
+version = '0.0.1-SNAPSHOT'
+description = 'next-page-msa'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// 루트 프로젝트는 bootJar 비활성화
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}
+
+dependencies {
+    // 루트 프로젝트 기본 의존성
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        mavenCentral()
+    }
+
+    // 모든 모듈의 아티팩트명을 하이픈 없이 축약 설정 (ex: common-module -> commonmodule)
+    tasks.named('jar') {
+        archiveFileName = "${project.name.replace('-', '')}.jar"
+    }
+
+    dependencyManagement {
+        imports {
+            // Spring Boot 버전 관리 (subprojects에서 버전 생략 가능하게 함)
+            mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.9"
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

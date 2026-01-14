@@ -1,0 +1,13 @@
+// build.gradle (Infra: Discovery Server)
+plugins {
+    id 'org.springframework.boot'
+}
+
+// 아티팩트명: discoveryserver
+tasks.named('bootJar') {
+    archiveFileName = "discoveryserver.jar"
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+}
