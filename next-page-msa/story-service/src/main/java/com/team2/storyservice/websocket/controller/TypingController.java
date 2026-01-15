@@ -9,10 +9,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 /**
- * WebSocket 硫붿떆吏 泥섎━ 而⑦듃濡ㅻ윭
- * ?ㅼ떆媛??낅젰 ?곹깭 釉뚮줈?쒖틦?ㅽ듃
+ * WebSocket 메시지 처리 컨트롤러
+ * 실시간 입력 상태 브로드캐스트
  *
- * @author ?뺤쭊??
+ * @author 정진호
  */
 @Slf4j
 @Controller
@@ -22,9 +22,9 @@ public class TypingController {
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
-     * ?낅젰 ?쒖옉 ?대깽??泥섎━
-     * ?대씪?댁뼵?? /app/typing/start
-     * 釉뚮줈?쒖틦?ㅽ듃: /topic/typing/{bookId}
+     * 입력 시작 이벤트 처리
+     * 클라이언트: /app/typing/start
+     * 브로드캐스트: /topic/typing/{bookId}
      */
     @MessageMapping("/typing/start")
     public void handleTypingStart(TypingStatus status) {
@@ -34,9 +34,9 @@ public class TypingController {
     }
 
     /**
-     * ?낅젰 醫낅즺 ?대깽??泥섎━
-     * ?대씪?댁뼵?? /app/typing/stop
-     * 釉뚮줈?쒖틦?ㅽ듃: /topic/typing/{bookId}
+     * 입력 종료 이벤트 처리
+     * 클라이언트: /app/typing/stop
+     * 브로드캐스트: /topic/typing/{bookId}
      */
     @MessageMapping("/typing/stop")
     public void handleTypingStop(TypingStatus status) {
@@ -46,9 +46,9 @@ public class TypingController {
     }
 
     /**
-     * ?볤? ?낅젰 ?쒖옉 ?대깽??泥섎━
-     * ?대씪?댁뼵?? /app/comment-typing/start
-     * 釉뚮줈?쒖틦?ㅽ듃: /topic/comment-typing/{bookId}
+     * 댓글 입력 시작 이벤트 처리
+     * 클라이언트: /app/comment-typing/start
+     * 브로드캐스트: /topic/comment-typing/{bookId}
      */
     @MessageMapping("/comment-typing/start")
     public void handleCommentTypingStart(TypingStatus status) {
@@ -58,9 +58,9 @@ public class TypingController {
     }
 
     /**
-     * ?볤? ?낅젰 醫낅즺 ?대깽??泥섎━
-     * ?대씪?댁뼵?? /app/comment-typing/stop
-     * 釉뚮줈?쒖틦?ㅽ듃: /topic/comment-typing/{bookId}
+     * 댓글 입력 종료 이벤트 처리
+     * 클라이언트: /app/comment-typing/stop
+     * 브로드캐스트: /topic/comment-typing/{bookId}
      */
     @MessageMapping("/comment-typing/stop")
     public void handleCommentTypingStop(TypingStatus status) {

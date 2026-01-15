@@ -113,6 +113,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
+import { toast } from '@/utils/toast'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -126,7 +127,7 @@ const loadingList = ref(false)
 
 onMounted(async () => {
     if (!authStore.isAuthenticated) {
-        alert('로그인이 필요합니다.')
+        toast.warning('로그인이 필요합니다.')
         router.push('/')
         return
     }
@@ -186,9 +187,9 @@ const withdraw = async () => {
     try {
         await axios.delete('/auth/withdraw')
         authStore.logout()
-        alert('탈퇴되었습니다.')
+        toast.success('탈퇴되었습니다.')
         router.push('/')
-    } catch(e) { alert('실패') }
+    } catch(e) { toast.error('탈퇴 실패') }
 }
 </script>
 

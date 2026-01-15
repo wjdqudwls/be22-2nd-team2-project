@@ -1,7 +1,13 @@
 # 📋 Next Page API Specification
-> **버전:** 2.2 (MSA Integrated)
+> **버전:** 2.3 (MSA Complete)
 > **최신 업데이트:** 2026-01-15
-> **설명:** Next Page MSA 프로젝트의 전체 REST API 상세 명세서입니다.
+> **설명:** Next Page MSA 프로젝트의 전체 REST API 및 WebSocket 명세서입니다.
+> 
+> **서비스 구성:**
+> - **Gateway Server**: `http://localhost:8000` (통합 진입점)
+> - **Member Service**: `http://localhost:8081`
+> - **Story Service**: `http://localhost:8082`
+> - **Reaction Service**: `http://localhost:8083`
 
 ---
 
@@ -347,3 +353,156 @@
 - **method**: `POST`
 - **URL**: `/api/reactions/votes/sentences/{sentenceId}`
 - **Body**: `voteType` (LIKE/DISLIKE)
+
+---
+
+## ⚡ 4. 실시간 (WebSocket/STOMP) 도메인
+
+### WebSocket 연결
+- **Endpoint**: `/ws` (SockJS fallback 지원)
+- **Protocol**: STOMP over WebSocket
+- **서비스**: Story Service (Port 8082)
+
+☑ **연결 설정**
+```javascript
+const socket = new SockJS('http://localhost:8082/ws');
+const stompClient = Stomp.over(socket);
+stompClient.connect({}, onConnected, onError);
+```
+
+---
+
+### 타이핑 상태 전송 (문장)
+- **API ID**: WS-TYPING-SENTENCE
+- **설명**: 사용자가 문장을 작성 중일 때 실시간으로 다른 사용자에게 알림
+- **Send Destination**: `/app/typing/sentence`
+- **Subscribe Topic**: `/topic/typing/sentence/{bookId}`
+
+☑ **Request Payload (Send)**
+```json
+{
+  "bookId": 1,
+  "nickname": "홍길동",
+  "isTyping": true
+}
+```
+
+☑ **Response Payload (Receive)**
+```json
+{
+  "bookId": 1,
+  "nickname": "홍길동",
+  "isTyping": true,
+  "timestamp": "2026-01-15T10:30:00"
+}
+```
+
+---
+
+### 타이핑 상태 전송 (댓글)
+- **API ID**: WS-TYPING-COMMENT
+- **설명**: 사용자가 댓글을 작성 중일 때 실시간으로 다른 사용자에게 알림
+- **Send Destination**: `/app/typing/comment`
+- **Subscribe Topic**: `/topic/typing/comment/{bookId}`
+
+☑ **Request Payload (Send)**
+```json
+{
+  "bookId": 1,
+  "nickname": "홍길동",
+  "typing": true
+}
+```
+
+---
+
+### 새 소설 생성 알림
+- **API ID**: WS-BOOK-CREATED
+- **설명**: 새로운 소설이 생성되면 메인 페이지의 모든 사용자에게 알림
+- **Subscribe Topic**: `/topic/books/new`
+
+☑ **Response Payload (Receive)**
+```json
+{
+  "bookId": 42,
+  "title": "새로운 모험",
+  "writerNickname": "작가123",
+  "categoryName": "판타지",
+  "createdAt": "2026-01-15T10:30:00"
+}
+```
+
+---
+
+### 새 문장 추가 알림
+- **API ID**: WS-SENTENCE-CREATED
+- **설명**: 소설에 새 문장이 추가되면 해당 소설을 보고 있는 모든 사용자에게 알림
+- **Subscribe Topic**: `/topic/books/{bookId}/sentences`
+
+☑ **Response Payload (Receive)**
+```json
+{
+  "sentenceId": 99,
+  "bookId": 1,
+  "content": "그리고 그들은 행복하게 살았습니다.",
+  "sequenceNo": 10,
+  "writerNickname": "작가456",
+  "createdAt": "2026-01-15T10:31:00"
+}
+```
+
+---
+
+### 새 댓글 추가 알림
+- **API ID**: WS-COMMENT-CREATED
+- **설명**: 소설에 새 댓글이 추가되면 해당 소설을 보고 있는 모든 사용자에게 알림
+- **Subscribe Topic**: `/topic/books/{bookId}/comments`
+
+☑ **Response Payload (Receive)**
+```json
+{
+  "commentId": 77,
+  "bookId": 1,
+  "content": "정말 재미있는 소설이네요!",
+  "writerNickname": "독자789",
+  "parentId": null,
+  "createdAt": "2026-01-15T10:32:00"
+}
+```
+
+---
+
+## 📌 5. 내부 API (Internal API - Feign Client 전용)
+
+### Member Service 내부 API
+
+#### 회원 정보 단건 조회
+- **URL**: `/internal/members/{memberId}`
+- **Method**: `GET`
+- **용도**: 다른 서비스에서 회원 닉네임 등 정보 조회
+- **권한**: 내부 서비스만 접근 가능
+
+#### 회원 정보 일괄 조회 (Batch)
+- **URL**: `/internal/members/batch`
+- **Method**: `POST`
+- **Body**: `memberIds` (List<Long>)
+- **용도**: N+1 문제 방지를 위한 일괄 조회
+
+---
+
+### Story Service 내부 API
+
+#### 소설 정보 조회
+- **URL**: `/internal/books/{bookId}`
+- **Method**: `GET`
+- **용도**: 다른 서비스에서 소설 제목 등 정보 조회
+
+#### 문장 ID로 소설 ID 조회
+- **URL**: `/internal/sentences/{sentenceId}/book`
+- **Method**: `GET`
+- **용도**: reaction-service에서 문장에 투표할 때 소설 ID 확인
+
+---
+
+**Last Updated:** 2026-01-15  
+**Maintained by:** Team Next Page

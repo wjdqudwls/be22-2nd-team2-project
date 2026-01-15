@@ -96,7 +96,7 @@
             b.max_sequence,
             b.created_at,
             b.last_writer_user_id AS lastWriterUserId,
-            (SELECT vote_type FROM book_votes WHERE book_id = b.book_id AND voter_id = #{userId}) AS myVote
+            CAST(NULL AS CHAR) AS myVote
         FROM books b
         WHERE b.book_id = #{bookId}
     </select>
@@ -109,28 +109,21 @@
             s.content,
             s.writer_id,
             s.created_at,
-            (SELECT COUNT(*) FROM sentence_votes sv WHERE sv.sentence_id = s.sentence_id AND sv.vote_type = 'LIKE') AS likeCount,
-            (SELECT COUNT(*) FROM sentence_votes sv WHERE sv.sentence_id = s.sentence_id AND sv.vote_type = 'DISLIKE') AS dislikeCount,
-            (SELECT vote_type FROM sentence_votes WHERE sentence_id = s.sentence_id AND voter_id = #{userId}) AS myVote
+            0 AS likeCount,
+            0 AS dislikeCount,
+            CAST(NULL AS CHAR) AS myVote
         FROM sentences s
         WHERE s.book_id = #{bookId}
         ORDER BY s.sequence_no ASC
     </select>
 
-    <!-- 소설의 좋아요 수 조회 -->
+    <!-- 소설의 좋아요/싫어요 수 조회 (Deprecated: Use Feign Client) -->
     <select id="countLikes" parameterType="long" resultType="int">
-        SELECT COUNT(*)
-        FROM book_votes
-        WHERE book_id = #{bookId}
-          AND vote_type = 'LIKE'
+        SELECT 0
     </select>
 
-    <!-- 소설의 싫어요 수 조회 -->
     <select id="countDislikes" parameterType="long" resultType="int">
-        SELECT COUNT(*)
-        FROM book_votes
-        WHERE book_id = #{bookId}
-          AND vote_type = 'DISLIKE'
+        SELECT 0
     </select>
 
     <!-- 기존 메서드 (하위 호환용) -->
@@ -159,8 +152,8 @@
             s.created_at,
             s.book_id AS bookId,
             (SELECT title FROM books b WHERE b.book_id = s.book_id) AS bookTitle,
-            (SELECT COUNT(*) FROM sentence_votes sv WHERE sv.sentence_id = s.sentence_id AND sv.vote_type = 'LIKE') AS likeCount,
-            (SELECT COUNT(*) FROM sentence_votes sv WHERE sv.sentence_id = s.sentence_id AND sv.vote_type = 'DISLIKE') AS dislikeCount
+            0 AS likeCount,
+            0 AS dislikeCount
         FROM sentences s
         WHERE s.writer_id = #{writerId}
         ORDER BY s.created_at DESC

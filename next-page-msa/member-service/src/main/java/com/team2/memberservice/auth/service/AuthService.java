@@ -148,12 +148,16 @@ public class AuthService {
 
   /**
    * Authentication 객체 생성
+   * 중요: Principal로 CustomUserDetails를 사용해야 JwtTokenProvider에서 사용자 ID를 추출할 수 있음
    */
   private Authentication createAuthentication(Member member) {
+    com.team2.memberservice.config.security.CustomUserDetails customUserDetails = new com.team2.memberservice.config.security.CustomUserDetails(
+        member);
+
     return new UsernamePasswordAuthenticationToken(
-        member.getUserEmail(),
+        customUserDetails,
         null,
-        Collections.singleton(new SimpleGrantedAuthority("ROLE_" + member.getUserRole().name())));
+        customUserDetails.getAuthorities());
   }
 
   /**

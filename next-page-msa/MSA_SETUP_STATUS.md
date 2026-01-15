@@ -79,6 +79,19 @@
 - [x] Login/Signup Modal UX 개선 (드래그 닫힘 방지)
 - [x] 503 Service Unavailable (Gateway) 해결 (common-module fix)
 
+### 9. Documentation ✅
+
+- [x] JavaDoc 전체 추가 (작성자 정보 포함)
+- [x] Swagger/OpenAPI 전체 Controller 적용
+- [x] API_SPECIFICATION.md 최신화 (WebSocket 포함)
+- [x] TECH_ARCHITECTURE.md 개선
+
+### 10. Testing ✅
+
+- [x] JUnit + Mockito 단위 테스트 작성
+- [x] Service Layer 테스트 커버리지 확보
+- [x] HTTP Client 테스트 파일 작성
+
 ---
 
 ## 🔧 Gradle 빌드 명령어

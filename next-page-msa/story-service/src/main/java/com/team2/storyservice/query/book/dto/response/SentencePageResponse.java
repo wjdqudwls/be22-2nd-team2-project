@@ -5,6 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
 
+
+/**
+ * SentencePageResponse
+ *
+ * @author 정진호
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -180,6 +180,7 @@ import axios from 'axios'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import CommentNode from '@/components/CommentNode.vue'
+import { toast } from '@/utils/toast'
 
 const route = useRoute()
 const router = useRouter()
@@ -263,10 +264,10 @@ const fetchBookDetail = async () => {
     sentences.value = book.value.sentences || []
   } catch (e) {
     if (e.response && (e.response.status === 401 || e.response.status === 403)) {
-      alert('로그인이 필요합니다.')
+      toast.warning('로그인이 필요합니다.')
       authStore.openLogin()
     } else {
-      alert('소설 정보를 불러올 수 없습니다.')
+      toast.error('소설 정보를 불러올 수 없습니다.')
     }
   } finally {
     loading.value = false
@@ -386,7 +387,7 @@ const submitSentence = async () => {
     const url = links.value['append-sentence'] ? links.value['append-sentence'].href : `/books/${bookId}/sentences`
     try {
         await axios.post(url, { content: newSentence.value })
-        alert('문장이 등록되었습니다!')
+        toast.success('문장이 등록되었습니다!')
         newSentence.value = ''
         fetchBookDetail()
     } catch(e) { console.error(e) }
@@ -408,7 +409,7 @@ const postComment = async (content, parentId, callback, link) => {
         await axios.post(url, { bookId: bookId, content, parentId })
         if (callback) callback()
         fetchComments()
-    } catch (e) { alert('등록 실패') }
+    } catch (e) { toast.error('등록 실패') }
 }
 
 const editComment = async (payload) => {
@@ -416,7 +417,7 @@ const editComment = async (payload) => {
         await axios.patch(`/reactions/comments/${payload.commentId}`, { content: payload.content })
         if (payload.callback) payload.callback()
         fetchComments()
-    } catch(e) { alert('수정 실패') }
+    } catch(e) { toast.error('수정 실패') }
 }
 
 const deleteComment = async (payload) => {
@@ -424,7 +425,7 @@ const deleteComment = async (payload) => {
     try {
         await axios.delete(`/reactions/comments/${payload.commentId}`)
         fetchComments()
-    } catch(e) { alert('삭제 실패') }
+    } catch(e) { toast.error('삭제 실패') }
 }
 
 const voteBook = async (voteType) => {
@@ -446,9 +447,9 @@ const completeBook = async () => {
     if (!confirm('완결하시겠습니까?')) return
     try {
         await axios.post(`/books/${bookId}/complete`)
-        alert('완결되었습니다!')
+        toast.success('완결되었습니다!')
         fetchBookDetail()
-    } catch(e) { alert('실패') }
+    } catch(e) { toast.error('실패') }
 }
 
 const deleteBook = async () => {
@@ -456,7 +457,7 @@ const deleteBook = async () => {
     try {
         await axios.delete(`/books/${bookId}`)
         router.push('/')
-    } catch(e) { alert('실패') }
+    } catch(e) { toast.error('삭제 실패') }
 }
 
 // Sentence Edit
@@ -464,7 +465,7 @@ const canEditSentence = (sent) => (authStore.user && sent.writerId === authStore
 
 const startEditSentence = (sent) => {
     const last = sortedSentences.value[sortedSentences.value.length - 1]
-    if (sent.sentenceId !== last.sentenceId) { alert('마지막 문장만 수정 가능'); return }
+    if (sent.sentenceId !== last.sentenceId) { toast.warning('마지막 문장만 수정 가능'); return }
     editSentenceContent.value = sent.content
     editingSentenceId.value = sent.sentenceId
     sendTyping(true)
@@ -481,17 +482,17 @@ const saveSentence = async (sent) => {
         sent.content = editSentenceContent.value
         editingSentenceId.value = null
         sendTyping(false)
-    } catch(e) { alert('수정 실패') }
+    } catch(e) { toast.error('수정 실패') }
 }
 
 const deleteSentence = async (sent) => {
     const last = sortedSentences.value[sortedSentences.value.length - 1]
-    if (sent.sentenceId !== last.sentenceId) { alert('마지막 문장만 삭제 가능'); return }
+    if (sent.sentenceId !== last.sentenceId) { toast.warning('마지막 문장만 삭제 가능'); return }
     if (!confirm('삭제하시겠습니까?')) return
     try {
         await axios.delete(`/books/${bookId}/sentences/${sent.sentenceId}`)
         sentences.value = sentences.value.filter(s => s.sentenceId !== sent.sentenceId)
-    } catch(e) { alert('삭제 실패') }
+    } catch(e) { toast.error('삭제 실패') }
 }
 
 // Title Edit
@@ -502,7 +503,7 @@ const saveTitle = async () => {
         await axios.patch(`/books/${bookId}`, { title: editTitleContent.value })
         book.value.title = editTitleContent.value
         isEditingTitle.value = false
-    } catch(e) { alert('실패') }
+    } catch(e) { toast.error('제목 수정 실패') }
 }
 </script>
 

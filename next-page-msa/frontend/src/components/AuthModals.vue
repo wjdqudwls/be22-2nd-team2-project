@@ -72,10 +72,13 @@
   </div>
 </template>
 
+
+
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
+import { toast } from '@/utils/toast'
 
 const authStore = useAuthStore()
 
@@ -120,7 +123,7 @@ const handleLogin = async () => {
         // Reset form
         loginForm.value = { email: '', password: '', autoLogin: false }
     } catch (e) {
-        alert(e.response?.data?.message || '로그인 실패')
+        toast.error(e.response?.data?.message || '로그인 실패')
     } finally {
         loading.value = false
     }
@@ -194,11 +197,11 @@ const handleSignup = async () => {
     try {
         await authStore.signup(signupForm.value.email, signupForm.value.nickname, signupForm.value.password)
         closeSignup()
-        alert('가입 완료! 환영합니다.')
+        toast.success('가입 완료! 환영합니다.')
         // Reset
         signupForm.value = { email: '', nickname: '', password: '' }
     } catch (e) {
-        alert(e.response?.data?.message || '가입 실패')
+        toast.error(e.response?.data?.message || '가입 실패')
     } finally {
         signupLoading.value = false
     }
@@ -217,4 +220,20 @@ const handleOverlayClick = (closeFn, e) => {
     }
     mouseDownTarget.value = null
 }
+
+// ESC Key Handling
+const handleKeydown = (e) => {
+    if (e.key === 'Escape') {
+        if (authStore.showLoginModal) closeLogin()
+        if (authStore.showSignupModal) closeSignup()
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown)
+})
 </script>

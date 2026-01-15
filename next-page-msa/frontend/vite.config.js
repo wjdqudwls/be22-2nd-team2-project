@@ -15,6 +15,7 @@ export default defineConfig({
   server: {
     port: 3000,
     strictPort: true, // 포트 3000번이 사용 중이면 실행 실패 (좀비 프로세스 방지)
+    host: true, // 외부 접속 허용 (0.0.0.0)
     proxy: {
       '/api': {
         target: 'http://localhost:8000', // Gateway Server

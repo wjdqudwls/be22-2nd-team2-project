@@ -34,16 +34,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-
-// Recursive component requires self-reference or correct import
-// In Vue 3 Sfc with script setup, self-referencing for recursion is automatic if name strictly matches filename usually,
-// but explicit import is safer for recursive structure.
-// However, since we are inside CommentNode.vue, we can just use the name `CommentNode` in template if we define it, or just use `comment-node`?
-// In Vue 3 SFC, we can simply import it recursively.
-// Actually, simple self-reference works. But let's export it.
-</script>
 <script>
 export default {
   name: 'CommentNode'
@@ -51,6 +41,8 @@ export default {
 </script>
 
 <script setup>
+import { ref, computed } from 'vue'
+
 const props = defineProps(['comment', 'currentUserId', 'userRole'])
 const emit = defineEmits(['reply', 'edit', 'delete'])
 

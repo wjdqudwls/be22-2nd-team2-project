@@ -13,11 +13,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * @author Next-Page Team (김태형)
  */
 @SpringBootApplication(scanBasePackages = {
-    "com.team2.memberservice",
-    "com.team2.commonmodule"
+        "com.team2.memberservice",
+        "com.team2.commonmodule"
 })
 @EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = { "com.team2.memberservice", "com.team2.commonmodule.feign" })
 @EnableJpaAuditing
 public class MemberServiceApplication {
     public static void main(String[] args) {

@@ -5,6 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
 
+
+/**
+ * CommentPageResponse
+ *
+ * @author 정병진
+ */
 @Getter
 @Setter
 @NoArgsConstructor

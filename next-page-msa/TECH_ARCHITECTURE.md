@@ -32,12 +32,62 @@
 
 MSA는 서비스들이 파편화되어 있기 때문에, 이들을 관리해줄 **매니저**들이 필요합니다.
 
+```mermaid
+graph TD
+    Client["Client Browser"]
+    Gateway["API Gateway Server (8000)"]
+    Discovery["Discovery Server (8761)"]
+    Config["Config Server (8888)"]
+    
+    subgraph "Domain Services"
+        Member["Member Service (8081)"]
+        Story["Story Service (8082)"]
+        Reaction["Reaction Service (8083)"]
+    end
+
+    subgraph "Databases"
+        DB_M[("DB: Member")]
+        DB_S[("DB: Story")]
+        DB_R[("DB: Reaction")]
+    end
+
+    Client --> Gateway
+    Gateway --> Member
+    Gateway --> Story
+    Gateway --> Reaction
+    
+    Member --> DB_M
+    Story --> DB_S
+    Reaction --> DB_R
+    
+    Member -.-> Discovery
+    Story -.-> Discovery
+    Reaction -.-> Discovery
+    Gateway -.-> Discovery
+    
+    Member -.-> Config
+    Story -.-> Config
+    Reaction -.-> Config
+    Gateway -.-> Config
+```
+
 ### 2-1. Config Server (설정 관리자)
 *   **문제:** 서비스가 3개인데, `application.yml` 설정 파일도 3개입니다. DB 비밀번호를 바꾸려면 3번 수정하고 3번 재배포해야 합니다.
-*   **해결:** `NextPage Config Server`를 만들었습니다.
-    *   모든 설정(`*.yml`)을 **GitHub**(`next-page-env` 리포지토리) 한곳에 몰아넣습니다.
+*   **해결:** `Next Page Config Server`를 만들었습니다.
+    *   모든 설정(`*.yml`)을 **GitHub** (예: `next-page-config` 리포지토리) 한곳에 몰아넣습니다.
     *   각 서비스는 켜질 때 Config Server에게 **"내 설정 파일 좀 줘!"** 하고 받아옵니다.
-    *   **효과:** 설정이 바뀌면 GitHub 코드만 고치고 빈(Bean)만 리로딩하면 됩니다. (재배포 불필요)
+    *   **구조 예시:**
+        ```
+        next-page-config/ (Git Repository)
+        ├── member-service.yml
+        ├── story-service.yml
+        ├── reaction-service.yml
+        └── gateway-server.yml
+        ```
+    *   **효과:** 
+        - 설정이 바뀌면 GitHub 코드만 고치고 `/actuator/refresh` 엔드포인트 호출로 재시작 없이 반영
+        - 환경별 설정 분리 (dev, staging, prod) 용이
+        - 민감 정보(DB 비밀번호, API Key) 중앙 암호화 관리 가능
 
 ### 2-2. Eureka Discovery Server (위치 추적기)
 *   **문제:** MSA에서는 서비스가 클라우드 환경에서 IP가 수시로 바뀔 수 있습니다. `Member Service`가 `Story Service`를 호출하려면 IP를 알아야 하는데, 하드코딩할 수 없습니다.

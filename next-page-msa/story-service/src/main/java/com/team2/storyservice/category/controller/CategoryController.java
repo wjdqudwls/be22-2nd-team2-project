@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 移댄뀒怨좊━ 議고쉶 而⑦듃濡ㅻ윭
+ * 카테고리 조회 컨트롤러
  *
- * @author ?뺤쭊??
+ * @author 정진호
  */
-@Tag(name = "Books", description = "?뚯꽕(Book) 愿??API") // ?몄쓽??Book ?쒓렇???ы븿
+@Tag(name = "Books", description = "소설(Book) 관련 API") // 의미상 Book 태그에 포함
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
@@ -25,10 +25,11 @@ public class CategoryController {
 
     private final CategoryRepository categoryRepository;
 
-    @Operation(summary = "移댄뀒怨좊━ 紐⑸줉 議고쉶", description = "?뚯꽕 ?앹꽦 諛?寃?됱뿉 ?ъ슜?섎뒗 移댄뀒怨좊━ ?꾩껜 紐⑸줉??議고쉶?⑸땲??")
+    @Operation(summary = "카테고리 목록 조회", description = "소설 생성 및 검색에 사용되는 카테고리 전체 목록을 조회합니다")
     @GetMapping
     public ApiResponse<List<Category>> getCategories() {
         List<Category> categories = categoryRepository.findAll();
         return ApiResponse.success(categories);
     }
+
 }

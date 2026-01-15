@@ -383,3 +383,9 @@ a {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* Fix Modal Scrollbar */
+.modal::-webkit-scrollbar-track {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}

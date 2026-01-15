@@ -29,4 +29,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "3000") }) // 3초 타임아웃
     @Query("SELECT b FROM Book b WHERE b.bookId = :bookId")
     Optional<Book> findByIdForUpdate(@Param("bookId") Long bookId);
+
+    int countByWriterId(Long writerId);
 }

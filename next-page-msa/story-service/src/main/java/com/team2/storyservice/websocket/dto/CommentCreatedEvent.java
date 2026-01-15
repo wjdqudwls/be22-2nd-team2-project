@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * ?ㅼ떆媛??볤? ?앹꽦 ?대깽??DTO
+ * 실시간 댓글 생성 이벤트 DTO
  */
 @Getter
 @NoArgsConstructor

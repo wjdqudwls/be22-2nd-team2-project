@@ -254,21 +254,62 @@ resilience4j:
 
 ```mermaid
 erDiagram
-    users ||--o{ books : "writer_id"
-    users ||--o{ sentences : "writer_id"
-    users ||--o{ comments : "writer_id"
-    users ||--o{ book_votes : "voter_id"
-    users ||--o{ sentence_votes : "voter_id"
+    %% Member Service Database
+    users {
+        BIGINT user_id PK "사용자 ID"
+        VARCHAR email "이메일(ID)"
+        VARCHAR nickname "닉네임"
+    }
+    refresh_token {
+        VARCHAR email PK
+        VARCHAR token
+    }
 
-    categories ||--o{ books : "category_id"
+    %% Story Service Database
+    books {
+        BIGINT book_id PK "소설 ID"
+        BIGINT writer_id "작성자(User) ID"
+        VARCHAR title "제목"
+    }
+    sentences {
+        BIGINT sentence_id PK "문장 ID"
+        BIGINT book_id FK "소설 ID"
+        BIGINT writer_id "작성자(User) ID"
+        TEXT content "내용"
+    }
+    categories {
+        VARCHAR category_id PK "장르 코드"
+        VARCHAR category_nm "장르명"
+    }
+
+    %% Reaction Service Database
+    comments {
+        BIGINT comment_id PK "댓글 ID"
+        BIGINT book_id "소설 ID"
+        BIGINT writer_id "작성자 ID"
+        TEXT content "내용"
+        BIGINT parent_id FK "대댓글 부모 ID"
+    }
+    book_votes {
+        BIGINT vote_id PK
+        BIGINT book_id "소설 ID"
+        BIGINT voter_id "투표자 ID"
+    }
+    sentence_votes {
+        BIGINT vote_id PK
+        BIGINT sentence_id "문장 ID"
+        BIGINT voter_id "투표자 ID"
+    }
 
     books ||--|{ sentences : "contains"
-    books ||--o{ comments : "has"
-    books ||--o{ book_votes : "has"
-
-    sentences ||--o{ sentence_votes : "has"
-
-    comments |o--o{ comments : "parent_id (대댓글)"
+    categories ||--o{ books : "categorizes"
+    comments ||--o{ comments : "replies"
+    
+    %% Logical Links (Cross-Service)
+    users ||..o{ books : "creates (Logical)"
+    users ||..o{ sentences : "writes (Logical)"
+    users ||..o{ comments : "writes (Logical)"
+    books ||..o{ comments : "has (Logical)"
 ```
 
 ---
@@ -568,27 +609,43 @@ Microservices Architecture 전환 (2026.01.11 ~)
 
 ### 시스템 구성도
 
-```
-                    [Eureka Discovery Server]
-                           Port: 8761
-                      (서비스 등록/탐색)
-                                │
-                    [API Gateway Server]
-                         Port: 8000
-                  (JWT 검증, 라우팅, 헤더 주입)
-                                │
-            ┌───────────────────┼───────────────────┐
-            │                   │                   │
-    [Member Service]    [Story Service]    [Reaction Service]
-       Port: 8081          Port: 8082          Port: 8083
-            │                   │                   │
-    [DB: member]         [DB: story]        [DB: reaction]
-    - users              - books            - comments
-    - refresh_tokens     - sentences        - book_votes
-                         - categories       - sentence_votes
-            │                   │                   │
-            └───────────────────┴───────────────────┘
-                    Feign Client 통신 (동기 REST)
+```mermaid
+graph TD
+    Client["Client Browser"]
+    Gateway["API Gateway Server (8000)"]
+    Discovery["Discovery Server (8761)"]
+    Config["Config Server (8888)"]
+    
+    subgraph "Domain Services"
+        Member["Member Service (8081)"]
+        Story["Story Service (8082)"]
+        Reaction["Reaction Service (8083)"]
+    end
+
+    subgraph "Databases"
+        DB_M[("DB: Member")]
+        DB_S[("DB: Story")]
+        DB_R[("DB: Reaction")]
+    end
+
+    Client --> Gateway
+    Gateway --> Member
+    Gateway --> Story
+    Gateway --> Reaction
+    
+    Member --> DB_M
+    Story --> DB_S
+    Reaction --> DB_R
+    
+    Member -.-> Discovery
+    Story -.-> Discovery
+    Reaction -.-> Discovery
+    Gateway -.-> Discovery
+    
+    Member -.-> Config
+    Story -.-> Config
+    Reaction -.-> Config
+    Gateway -.-> Config
 ```
 
 ### 서비스별 책임
@@ -736,60 +793,74 @@ private Long userId;     // ✅ BIGINT와 매핑
 
 ## PART 3-3. MSA 실행 방법 (상세 가이드)
 
-### 필수 요구사항
+### 📋 필수 요구사항
 
-- JDK 17+
-- MariaDB 10.6+
-- Git
+- **JDK 17+** (Amazon Corretto 또는 Azul Zulu 권장)
+- **MariaDB 10.6+**
+- **Git** (Config Server 사용 시)
+- **Gradle 8.5+** (wrapper 포함)
 
-### 0단계: 환경 변수 설정 (.env)
+### 🔧 0단계: 환경 선택
 
-`config-server`가 Git 저장소에 접근하기 위해 보안 정보가 필요합니다.
-**루트 폴더(`next-page-msa/`)** 에 `.env` 파일을 생성하고 아래 내용을 작성하세요.
+#### Option A: Local Config (권장 - 개발 환경)
+각 서비스의 `application.yml`에 설정이 이미 포함되어 있습니다.
+- **장점:** 별도의 Config Server 없이 바로 실행 가능
+- **단점:** 설정 변경 시 각 서비스 재시작 필요
+
+#### Option B: Config Server (권장 - 운영 환경)
+Git 저장소에서 중앙 집중식 설정 관리
+
+1. Git 저장소 준비 (예: `next-page-config`)
+2. 루트 폴더(`next-page-msa/`)에 `.env` 파일 생성:
 
 ```properties
-# .env 파일 예시
-CONFIG_GIT_URI=https://github.com/fdrn9999/next-page-env
+# .env 파일 (절대 커밋하지 말 것!)
+CONFIG_GIT_URI=https://github.com/your-org/next-page-config
 CONFIG_GIT_USERNAME=your_git_username
-CONFIG_GIT_PASSWORD=your_git_token
+CONFIG_GIT_PASSWORD=your_git_token_or_password
 ```
 
-> **주의:** 이 파일은 `.gitignore`에 등록되어 있어 커밋되지 않습니다. 로컬 실행 시 필수입니다.
+> **💡 Tip:** `.env` 파일은 `.gitignore`에 등록되어 있어 안전합니다.
 
-### 1단계: 데이터베이스 설정 (Database Setup)
-
-MSA 환경을 위한 데이터베이스와 계정을 생성합니다. 편리한 관리를 위해 제공된 스크립트를 사용하세요.
+### 🗄️ 1단계: 데이터베이스 설정
 
 **위치:** `next-page-msa/database-scripts/`
 
-#### 1-1. 계정 초기화 (Root 권한)
+#### 방법 1: 자동 스크립트 (권장)
 
-`root` 계정으로 접속하여 애플리케이션 공용 계정(`swcamp`)을 생성합니다.
-
-```bash
-# database-scripts/00-init-roles.sql 실행
-mysql -u root -pmariadb < 00-init-roles.sql
+**Windows (PowerShell):**
+```powershell
+cd database-scripts
+.\setup-all-databases.ps1
 ```
 
-#### 1-2. 데이터베이스 및 스키마 생성 (swcamp 계정)
+**Linux/Mac (Bash):**
+```bash
+cd database-scripts
+chmod +x setup.sh
+./setup.sh
+```
 
-`swcamp` 계정으로 나머지 스크립트를 순서대로 실행합니다.
+#### 방법 2: 수동 실행
 
 ```bash
-# 1. DB 생성
-mysql -u swcamp -pswcamp < 01-create-databases.sql
+# 1. Root 계정으로 공용 계정 생성
+mysql -u root -p < 00-init-roles.sql
 
-# 2. 서비스별 스키마 생성
+# 2. swcamp 계정으로 DB 및 스키마 생성
+mysql -u swcamp -pswcamp < 01-create-databases.sql
 mysql -u swcamp -pswcamp < 02-member-service-schema.sql
 mysql -u swcamp -pswcamp < 03-story-service-schema.sql
 mysql -u swcamp -pswcamp < 04-reaction-service-schema.sql
 ```
 
-> **참고:** Linux/Mac 사용자는 `README.md`에 있는 `script.sh`를, Windows 사용자는 PowerShell 스크립트를 활용하면 한 번에 실행할 수 있습니다.
+> **💡 참고:** 각 스키마 파일에는 이미 샘플 데이터가 포함되어 있습니다.
+
+📖 **자세한 가이드:** [database-scripts/README.md](next-page-msa/database-scripts/README.md)
 
 ---
 
-### 2단계: Config Server 실행 (필수)
+### 🚀 2단계: 서비스 실행 순서 ⚠️ 매우 중요
 
 모든 마이크로서비스는 시작 시 **Config Server**로부터 설정을 받아옵니다. 따라서 가장 먼저 실행되어야 합니다.
 

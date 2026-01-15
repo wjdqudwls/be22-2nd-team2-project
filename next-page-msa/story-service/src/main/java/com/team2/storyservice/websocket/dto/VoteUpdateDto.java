@@ -5,6 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * VoteUpdateDto
+ *
+ * @author 정진호
+ */
 @Getter
 @Builder
 @NoArgsConstructor

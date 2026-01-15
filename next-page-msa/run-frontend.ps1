@@ -1,6 +1,7 @@
 Write-Host "🚀 Frontend Application Starting..."
 Write-Host "-------------------------------------------"
-Write-Host "Target URL: http://localhost:3000"
+Write-Host "Local URL:   http://localhost:3000"
+Write-Host "Network URL: http://192.168.0.52:3000"
 Write-Host "Stop Command: Ctrl+C"
 Write-Host "-------------------------------------------"
 

@@ -1,5 +1,6 @@
 package com.team2.memberservice.jwt;
 
+import com.team2.memberservice.config.security.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -52,11 +53,44 @@ public class JwtTokenProvider {
 
     /**
      * Access Token 생성
+     * MSA 환경에서 Gateway가 헤더를 주입할 수 있도록 사용자 정보를 모두 포함
      * 
      * @param authentication 인증 정보
      * @return Access Token
      */
     public String createAccessToken(Authentication authentication) {
+        // CustomUserDetails에서 사용자 정보 추출
+        Object principal = authentication.getPrincipal();
+        String userEmail = authentication.getName();
+        String userId = null;
+        String nickname = null;
+        String role = null;
+
+        log.info("Creating Access Token for user: {}", userEmail);
+        log.info("Principal type: {}", principal.getClass().getName());
+
+        if (principal instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) principal;
+            if (userDetails.getMember() != null) {
+                userId = String.valueOf(userDetails.getMember().getUserId());
+                nickname = userDetails.getMember().getUserNicknm();
+                role = userDetails.getMember().getUserRole().name();
+                log.info("Details extracted from CustomUserDetails - userId: {}, nickname: {}", userId, nickname);
+            } else {
+                log.error("CustomUserDetails.getMember() is null!");
+            }
+        } else {
+            log.warn("Principal is NOT CustomUserDetails! It is: {}", principal);
+            // 만약 principal이 문자열(email)이라면?
+            // 비상 대책: 이메일로라도 DB 조회? (일단 로그만)
+        }
+
+        if (userId == null) {
+            log.error("CRITICAL: userId is null during token creation for {}", userEmail);
+            // throw new RuntimeException("User ID cannot be null for token generation");
+            // 일단 에러 던지지 말고 로그만 남겨서 진행 상황 확인 (하지만 Gateway에서 막힐 것임)
+        }
+
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -65,7 +99,10 @@ public class JwtTokenProvider {
         Date validity = new Date(now + (accessTokenValidityInSeconds * 1000));
 
         return Jwts.builder()
-                .subject(authentication.getName())
+                .subject(userId) // subject는 userId로 설정
+                .claim("email", userEmail)
+                .claim("nickname", nickname)
+                .claim("role", role)
                 .claim(AUTHORITIES_KEY, authorities)
                 .issuedAt(new Date(now))
                 .expiration(validity)
@@ -80,11 +117,22 @@ public class JwtTokenProvider {
      * @return Refresh Token
      */
     public String createRefreshToken(Authentication authentication) {
+        // CustomUserDetails에서 사용자 정보 추출
+        Object principal = authentication.getPrincipal();
+        String userEmail = authentication.getName();
+        String userId = null;
+
+        if (principal instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) principal;
+            userId = String.valueOf(userDetails.getMember().getUserId());
+        }
+
         long now = System.currentTimeMillis();
         Date validity = new Date(now + (refreshTokenValidityInSeconds * 1000));
 
         return Jwts.builder()
-                .subject(authentication.getName())
+                .subject(userId) // subject는 userId로 설정
+                .claim("email", userEmail)
                 .issuedAt(new Date(now))
                 .expiration(validity)
                 .signWith(key, Jwts.SIG.HS256)
@@ -93,6 +141,7 @@ public class JwtTokenProvider {
 
     /**
      * 토큰으로부터 Authentication 객체 생성
+     * MSA 환경에서 subject는 userId이므로 email claim에서 이메일을 추출
      * 
      * @param token JWT 토큰
      * @return Authentication 객체
@@ -104,8 +153,13 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("권한 정보가 없는 토큰입니다.");
         }
 
+        // MSA: subject는 userId, email은 별도 claim
+        String userEmail = claims.get("email", String.class);
+        if (userEmail == null) {
+            throw new IllegalArgumentException("이메일 정보가 없는 토큰입니다.");
+        }
+
         // UserDetailsService를 통해 실제 CustomUserDetails를 로드
-        String userEmail = claims.getSubject();
         UserDetails principal = userDetailsService.loadUserByUsername(userEmail);
 
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
@@ -156,13 +210,14 @@ public class JwtTokenProvider {
 
     /**
      * 토큰에서 사용자 이메일 추출
+     * MSA 환경에서 subject는 userId이므로 email claim에서 추출
      * 
      * @param token JWT 토큰
      * @return 사용자 이메일
      */
     public String getUserEmailFromToken(String token) {
         Claims claims = parseClaims(token);
-        return claims.getSubject();
+        return claims.get("email", String.class);
     }
 
     /**

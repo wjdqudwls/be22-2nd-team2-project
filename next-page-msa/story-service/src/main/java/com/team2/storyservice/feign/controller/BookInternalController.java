@@ -2,6 +2,7 @@ package com.team2.storyservice.feign.controller;
 
 import com.team2.commonmodule.feign.dto.BookBatchInfoDto;
 import com.team2.commonmodule.feign.dto.BookInfoDto;
+import com.team2.commonmodule.feign.dto.MemberStoryStatsDto;
 import com.team2.commonmodule.response.ApiResponse;
 import com.team2.storyservice.feign.service.BookInternalService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -79,5 +80,18 @@ public class BookInternalController {
     public ResponseEntity<Long> getBookIdBySentenceId(@PathVariable Long sentenceId) {
         Long bookId = bookInternalService.getBookIdBySentenceId(sentenceId);
         return ResponseEntity.ok(bookId);
+    }
+
+    /**
+     * 사용자별 통계 정보 조회 (Feign Client용)
+     *
+     * @param userId 사용자 ID
+     * @return 소설/문장 수 통계
+     */
+    @GetMapping("/members/{userId}/stats")
+    public ResponseEntity<ApiResponse<MemberStoryStatsDto>> getMemberStoryStats(
+            @PathVariable Long userId) {
+        MemberStoryStatsDto stats = bookInternalService.getMemberStoryStats(userId);
+        return ResponseEntity.ok(ApiResponse.success(stats));
     }
 }

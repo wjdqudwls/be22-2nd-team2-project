@@ -1,5 +1,6 @@
 package com.team2.memberservice.command.member.controller;
 
+import com.team2.commonmodule.response.ApiResponse;
 import com.team2.memberservice.command.member.dto.request.SignUpRequest;
 import com.team2.memberservice.command.member.service.MemberService;
 import io.swagger.v3.oas.annotations.*;
@@ -59,15 +60,15 @@ public class MemberController {
       - 비밀번호는 BCrypt로 암호화되어 저장됨
       """, security = {} // 인증 불필요
   )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "회원가입 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": "회원가입 성공",
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "409", description = "이메일 또는 닉네임 중복", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 또는 닉네임 중복", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -77,7 +78,7 @@ public class MemberController {
             }
           }
           """))),
-      @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -89,10 +90,10 @@ public class MemberController {
           """)))
   })
   @PostMapping("/signup")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<String>> signup(
+  public ResponseEntity<ApiResponse<String>> signup(
       @Parameter(description = "회원가입 요청 정보 (이메일, 비밀번호, 닉네임)", required = true, schema = @Schema(implementation = SignUpRequest.class)) @RequestBody @Valid SignUpRequest memberCreateRequest) {
     memberService.registUser(memberCreateRequest);
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success("회원가입 성공"));
+    return ResponseEntity.ok(ApiResponse.success("회원가입 성공"));
   }
 
   /**
@@ -115,15 +116,15 @@ public class MemberController {
       - 일반 사용자와 동일한 검증 규칙 적용
       """, security = {} // 인증 불필요 (개발용)
   )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "관리자 계정 생성 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "관리자 계정 생성 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": "관리자 가입 성공",
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "409", description = "이메일 또는 닉네임 중복", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 또는 닉네임 중복", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -135,10 +136,10 @@ public class MemberController {
           """)))
   })
   @PostMapping("/admin")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<String>> signupAdmin(
+  public ResponseEntity<ApiResponse<String>> signupAdmin(
       @Parameter(description = "관리자 계정 생성 요청 정보", required = true, schema = @Schema(implementation = SignUpRequest.class)) @RequestBody @Valid SignUpRequest memberCreateRequest) {
     memberService.registAdmin(memberCreateRequest);
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success("관리자 가입 성공"));
+    return ResponseEntity.ok(ApiResponse.success("관리자 가입 성공"));
   }
 
   /**
@@ -163,15 +164,15 @@ public class MemberController {
       - 탈퇴 전 사용자에게 확인 절차 필요
       - 탈퇴 후 로그인 페이지로 리다이렉트
       """, security = @SecurityRequirement(name = "bearerAuth"))
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": null,
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -183,9 +184,9 @@ public class MemberController {
           """)))
   })
   @DeleteMapping("/withdraw")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<Void>> withdraw() {
+  public ResponseEntity<ApiResponse<Void>> withdraw() {
     memberService.withdraw();
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success());
+    return ResponseEntity.ok(ApiResponse.success());
   }
 
   /**
@@ -215,15 +216,15 @@ public class MemberController {
       - 탈퇴 후 복구 불가능
       - 감사 로그 기록 권장
       """, security = @SecurityRequirement(name = "bearerAuth"))
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "회원 강제 탈퇴 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 강제 탈퇴 성공", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": null,
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "403", description = "권한 없음 (관리자 아님)", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음 (관리자 아님)", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -233,7 +234,7 @@ public class MemberController {
             }
           }
           """))),
-      @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -245,10 +246,10 @@ public class MemberController {
           """)))
   })
   @DeleteMapping("/admin/users/{userId}")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<Void>> withdrawByAdmin(
+  public ResponseEntity<ApiResponse<Void>> withdrawByAdmin(
       @Parameter(description = "탈퇴시킬 회원의 ID", required = true, example = "1") @PathVariable Long userId) {
     memberService.withdrawByAdmin(userId);
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success());
+    return ResponseEntity.ok(ApiResponse.success());
   }
 
   /**
@@ -273,15 +274,15 @@ public class MemberController {
       - Debounce 적용하여 불필요한 요청 방지
       """, security = {} // 인증 불필요
   )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "사용 가능한 이메일", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 가능한 이메일", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": null,
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -293,10 +294,10 @@ public class MemberController {
           """)))
   })
   @GetMapping("/check-email")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<Void>> checkEmail(
+  public ResponseEntity<ApiResponse<Void>> checkEmail(
       @Parameter(description = "검증할 이메일 주소", required = true, example = "user@example.com") @RequestParam String email) {
     memberService.validateDuplicateEmail(email);
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success());
+    return ResponseEntity.ok(ApiResponse.success());
   }
 
   /**
@@ -322,15 +323,15 @@ public class MemberController {
       - 2-20자 길이 제한 클라이언트에서 먼저 검증
       """, security = {} // 인증 불필요
   )
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+  @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 가능한 닉네임", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": true,
             "data": null,
             "error": null
           }
           """))),
-      @ApiResponse(responseCode = "409", description = "이미 사용 중인 닉네임", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 닉네임", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
           {
             "success": false,
             "data": null,
@@ -342,9 +343,9 @@ public class MemberController {
           """)))
   })
   @GetMapping("/check-nickname")
-  public ResponseEntity<com.team2.commonmodule.response.ApiResponse<Void>> checkNickname(
+  public ResponseEntity<ApiResponse<Void>> checkNickname(
       @Parameter(description = "검증할 닉네임", required = true, example = "홍길동") @RequestParam String nickname) {
     memberService.validateDuplicateNicknm(nickname);
-    return ResponseEntity.ok(com.team2.commonmodule.response.ApiResponse.success());
+    return ResponseEntity.ok(ApiResponse.success());
   }
 }

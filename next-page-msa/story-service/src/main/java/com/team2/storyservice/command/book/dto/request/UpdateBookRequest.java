@@ -4,6 +4,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * UpdateBookRequest
+ *
+ * @author 정진호
+ */
 @Getter
 @NoArgsConstructor
 public class UpdateBookRequest {

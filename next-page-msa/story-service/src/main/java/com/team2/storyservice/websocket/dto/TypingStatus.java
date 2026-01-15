@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * ?낅젰 ?곹깭 硫붿떆吏 DTO
+ * 입력 상태 메시지 DTO
  *
- * @author ?뺤쭊??
+ * @author 정진호
  */
 @Getter
 @Setter

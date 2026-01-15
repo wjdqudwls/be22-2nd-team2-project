@@ -1,9 +1,12 @@
 package com.team2.storyservice.query.book.service;
 
 import com.team2.commonmodule.feign.MemberServiceClient;
+import com.team2.commonmodule.feign.ReactionServiceClient;
 import com.team2.commonmodule.feign.dto.MemberBatchInfoDto;
 import com.team2.commonmodule.feign.dto.MemberInfoDto;
+import com.team2.commonmodule.feign.dto.SentenceReactionInfoDto;
 import com.team2.commonmodule.response.ApiResponse;
+import com.team2.commonmodule.util.SecurityUtil;
 import com.team2.storyservice.query.book.dto.request.BookSearchRequest;
 import com.team2.storyservice.query.book.dto.response.BookDetailDto;
 import com.team2.storyservice.query.book.dto.response.BookDto;
@@ -35,6 +38,7 @@ public class BookQueryService {
 
     private final BookMapper bookMapper;
     private final MemberServiceClient memberServiceClient;
+    private final ReactionServiceClient reactionServiceClient;
 
     /**
      * 소설 검색/목록 조회 (페이징/정렬/필터링)
@@ -86,7 +90,7 @@ public class BookQueryService {
      * @throws BusinessException 소설을 찾을 수 없는 경우
      */
     public BookDetailDto getBookForViewer(Long bookId) {
-        Long userId = com.team2.commonmodule.util.SecurityUtil.getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
 
         // 1. 소설 기본 정보 조회
         BookDetailDto book = bookMapper.findBookForViewer(bookId, userId);
@@ -121,22 +125,22 @@ public class BookQueryService {
                     Map<Long, String> memberMap = response.getData().getMembers().stream()
                             .collect(Collectors.toMap(
                                     MemberInfoDto::getUserId,
-                                    MemberInfoDto::getUserNicknm
-                            ));
+                                    MemberInfoDto::getUserNicknm));
 
                     // 소설 작성자 닉네임 설정
                     book.setWriterNicknm(memberMap.get(book.getWriterId()));
 
                     // 각 문장 작성자 닉네임 설정
-                    sentences.forEach(sentence ->
-                            sentence.setWriterNicknm(memberMap.get(sentence.getWriterId()))
-                    );
+                    sentences.forEach(sentence -> sentence.setWriterNicknm(memberMap.get(sentence.getWriterId())));
                 }
             } catch (Exception e) {
                 log.warn("Failed to fetch member info from member-service: {}", e.getMessage());
                 // Feign 호출 실패 시에도 계속 진행 (닉네임은 null로 남음)
             }
         }
+
+        // 5. MSA: 반응(투표) 정보 조회 (Feign Client)
+        populateReactionStats(sentences);
 
         book.setSentences(sentences);
         return book;
@@ -163,6 +167,44 @@ public class BookQueryService {
             }
         }
 
+        // MSA: 반응(투표) 정보 조회 (Feign Client)
+        populateReactionStats(sentences);
+
         return new SentencePageResponse(sentences, page, size, totalElements);
+    }
+
+    private void populateReactionStats(List<SentenceDto> sentences) {
+        if (sentences == null || sentences.isEmpty())
+            return;
+
+        List<Long> sentenceIds = sentences.stream()
+                .map(SentenceDto::getSentenceId)
+                .collect(Collectors.toList());
+
+        Long currentUserId = null;
+        try { // Security Context가 없는 경우 대비 (비로그인 조회 등)
+            currentUserId = SecurityUtil.getCurrentUserId();
+        } catch (Exception e) {
+            // ignore
+        }
+
+        try {
+            ApiResponse<Map<Long, SentenceReactionInfoDto>> response = reactionServiceClient
+                    .getSentenceReactions(sentenceIds, currentUserId);
+            if (response != null && response.getData() != null) {
+                Map<Long, SentenceReactionInfoDto> statsMap = response.getData();
+                for (SentenceDto sentence : sentences) {
+                    SentenceReactionInfoDto stats = statsMap
+                            .get(sentence.getSentenceId());
+                    if (stats != null) {
+                        sentence.setLikeCount((int) stats.getLikeCount());
+                        sentence.setDislikeCount((int) stats.getDislikeCount());
+                        sentence.setMyVote(stats.getMyVote());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch reaction stats: {}", e.getMessage());
+        }
     }
 }

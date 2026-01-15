@@ -2,8 +2,10 @@ package com.team2.commonmodule.feign;
 
 import com.team2.commonmodule.feign.dto.BookBatchInfoDto;
 import com.team2.commonmodule.feign.dto.BookInfoDto;
+import com.team2.commonmodule.feign.dto.MemberStoryStatsDto;
 import com.team2.commonmodule.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,7 +22,7 @@ import java.util.List;
  * <p>
  * <b>사용 서비스:</b>
  * <ul>
- *   <li>reaction-service: Comment의 소설 제목 조회</li>
+ * <li>reaction-service: Comment의 소설 제목 조회</li>
  * </ul>
  * </p>
  *
@@ -41,7 +43,9 @@ public interface StoryServiceClient {
     /**
      * 여러 소설 정보 일괄 조회
      *
-     * <p>N+1 문제를 방지하기 위해 여러 소설의 정보를 한 번에 조회합니다.</p>
+     * <p>
+     * N+1 문제를 방지하기 위해 여러 소설의 정보를 한 번에 조회합니다.
+     * </p>
      *
      * @param bookIds 소설 ID 리스트
      * @return 소설 정보 리스트
@@ -57,4 +61,23 @@ public interface StoryServiceClient {
      */
     @GetMapping("/internal/books/{bookId}/exists")
     ApiResponse<Boolean> bookExists(@PathVariable("bookId") Long bookId);
+
+    /**
+     * 문장 ID로 해당 책의 ID 조회
+     *
+     * @param sentenceId 문장 ID
+     * @return 책 ID
+     */
+    @GetMapping("/internal/sentences/{sentenceId}/book-id")
+    ResponseEntity<Long> getBookIdBySentenceId(@PathVariable("sentenceId") Long sentenceId);
+
+    /**
+     * 사용자별 통계 정보 조회
+     *
+     * @param userId 사용자 ID
+     * @return 소설/문장 수 통계
+     */
+    @GetMapping("/internal/members/{userId}/stats")
+    ApiResponse<MemberStoryStatsDto> getMemberStoryStats(
+            @PathVariable("userId") Long userId);
 }

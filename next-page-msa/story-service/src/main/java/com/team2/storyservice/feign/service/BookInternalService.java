@@ -4,6 +4,7 @@ import com.team2.commonmodule.error.BusinessException;
 import com.team2.commonmodule.error.ErrorCode;
 import com.team2.commonmodule.feign.dto.BookBatchInfoDto;
 import com.team2.commonmodule.feign.dto.BookInfoDto;
+import com.team2.commonmodule.feign.dto.MemberStoryStatsDto;
 import com.team2.storyservice.command.book.entity.Book;
 import com.team2.storyservice.command.book.repository.BookRepository;
 import com.team2.storyservice.command.book.repository.SentenceRepository;
@@ -90,5 +91,21 @@ public class BookInternalService {
         return sentenceRepository.findById(sentenceId)
                 .map(sentence -> sentence.getBook().getBookId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+    }
+
+    /**
+     * 특정 사용자 ID에 대한 통계 정보 조회 (생성한 소설 수, 작성한 문장 수)
+     *
+     * @param userId 사용자 ID
+     * @return 사용자 통계 정보
+     */
+    public MemberStoryStatsDto getMemberStoryStats(Long userId) {
+        int createdBookCount = bookRepository.countByWriterId(userId);
+        int writtenSentenceCount = sentenceRepository.countByWriterId(userId);
+
+        return MemberStoryStatsDto.builder()
+                .createdBookCount(createdBookCount)
+                .writtenSentenceCount(writtenSentenceCount)
+                .build();
     }
 }

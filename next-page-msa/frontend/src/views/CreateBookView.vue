@@ -42,6 +42,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
+import { toast } from '@/utils/toast'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -54,7 +55,7 @@ const form = ref({
 
 onMounted(async () => {
     if (!authStore.isAuthenticated) {
-        alert('로그인이 필요합니다.')
+        toast.warning('로그인이 필요합니다.')
         authStore.openLogin()
         router.push('/')
         return
@@ -71,13 +72,13 @@ const createBook = async () => {
     loading.value = true
     try {
         const res = await axios.post('/books', form.value)
-        alert('새로운 이야기가 시작되었습니다!')
+        toast.success('새로운 이야기가 시작되었습니다!')
         // Response data format: check if it returns ID directly or in object
         // Monolithic CreateBookController returns ApiResponse<Long> (bookId)
         const newBookId = res.data.data
         router.push(`/books/${newBookId}`)
     } catch (e) {
-        alert('생성 실패: ' + (e.response?.data?.message || '오류'))
+        toast.error('생성 실패: ' + (e.response?.data?.message || '오류'))
     } finally {
         loading.value = false
     }

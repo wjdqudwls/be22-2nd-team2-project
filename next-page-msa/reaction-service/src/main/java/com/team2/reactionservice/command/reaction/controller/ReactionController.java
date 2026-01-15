@@ -104,9 +104,12 @@ public class ReactionController {
    * POST /api/reactions/votes/books
    *
    * @param request 투표 요청 정보 (bookId, voteType)
-   * @return 투표 반영 여부 (true: 반영됨 / false: 취소됨)
+   * @return 투표 반영 여부 (true: 반영됨/변경됨 / false: 취소됨)
    */
-  @Operation(summary = "소설 투표", description = "소설에 대해 좋아요/싫어요를 투표합니다.")
+  @Operation(summary = "소설 투표", description = "소설에 대해 좋아요/싫어요를 투표합니다.\n" +
+      "- **최초 투표**: 투표가 **반영**되며 `true`를 반환합니다.\n" +
+      "- **다른 타입으로 변경**: 기존 투표가 **변경**되며 `true`를 반환합니다. (예: 좋아요 -> 싫어요)\n" +
+      "- **동일 타입 재투표**: 기존 투표가 **취소**되며 `false`를 반환합니다. (예: 좋아요 -> 좋아요)")
   @PostMapping("/votes/books")
   public ResponseEntity<ApiResponse<Boolean>> voteBook(
       @RequestBody @Valid VoteRequest request) {
@@ -120,9 +123,12 @@ public class ReactionController {
    *
    * @param sentenceId 투표할 문장 ID
    * @param request    투표 요청 정보 (voteType)
-   * @return 투표 반영 여부 (true: 반영됨 / false: 취소됨)
+   * @return 투표 반영 여부 (true: 반영됨/변경됨 / false: 취소됨)
    */
-  @Operation(summary = "문장 투표", description = "특정 문장에 대해 좋아요/싫어요를 투표합니다.")
+  @Operation(summary = "문장 투표", description = "특정 문장에 대해 좋아요/싫어요를 투표합니다.\n" +
+      "- **최초 투표**: 투표가 **반영**되며 `true`를 반환합니다.\n" +
+      "- **다른 타입으로 변경**: 기존 투표가 **변경**되며 `true`를 반환합니다.\n" +
+      "- **동일 타입 재투표**: 기존 투표가 **취소**되며 `false`를 반환합니다.")
   @PostMapping("/votes/sentences/{sentenceId}")
   public ResponseEntity<ApiResponse<Boolean>> voteSentence(
       @PathVariable Long sentenceId,

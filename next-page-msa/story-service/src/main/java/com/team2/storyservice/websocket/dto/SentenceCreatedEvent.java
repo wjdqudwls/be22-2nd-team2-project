@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * ??臾몄옣 ?묒꽦 ?대깽??DTO
+ * 새 문장 작성 이벤트 DTO
  *
- * @author ?뺤쭊??
+ * @author 정진호
  */
 @Getter
 @NoArgsConstructor
