@@ -61,20 +61,17 @@ export const useAuthStore = defineStore('auth', {
             const autoLoginEnabled = localStorage.getItem('autoLoginEnabled') === 'true'
             const refreshToken = localStorage.getItem('refreshToken')
 
-            if (autoLoginEnabled && (refreshToken || !this.accessToken)) {
+            if (autoLoginEnabled && refreshToken && !this.accessToken) {
                 try {
-                    const response = await axios.post('/auth/refresh', {}, {
-                        headers: { 'Cookie': `refreshToken=${refreshToken}` } // Note: Browsers might not let you set Cookie header manually in JS, standard is HttpOnly cookies sent automatically. 
-                        // However, previous code manually sent it. If cookie is HttpOnly, this header setting is useless.
-                        // If the backend expects it in header or cookie, we need to match.
-                        // The previous code: headers: { 'Cookie': 'refreshToken=' + refreshToken } 
-                        // This suggests it's NOT an HttpOnly cookie or the backend reads it from header.
-                    })
+                    // Send refreshToken in request body instead of Cookie header
+                    // Browsers block manual Cookie header setting for security
+                    const response = await axios.post('/auth/refresh', { refreshToken })
 
                     const { accessToken: newAccess, refreshToken: newRefresh } = response.data.data
                     this.setSession(newAccess, newRefresh)
                     await this.fetchUserProfile()
                 } catch (e) {
+                    console.log('[Auth] Auto-login failed:', e.response?.data?.message || e.message)
                     this.logout()
                 }
             } else if (this.accessToken) {

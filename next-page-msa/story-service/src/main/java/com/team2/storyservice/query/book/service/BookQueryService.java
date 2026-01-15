@@ -90,7 +90,12 @@ public class BookQueryService {
      * @throws BusinessException 소설을 찾을 수 없는 경우
      */
     public BookDetailDto getBookForViewer(Long bookId) {
-        Long userId = SecurityUtil.getCurrentUserId();
+        Long userId = null;
+        try {
+            userId = SecurityUtil.getCurrentUserId();
+        } catch (Exception e) {
+            // 비로그인 사용자
+        }
 
         // 1. 소설 기본 정보 조회
         BookDetailDto book = bookMapper.findBookForViewer(bookId, userId);
@@ -101,9 +106,21 @@ public class BookQueryService {
         // 2. 문장 목록 조회
         List<SentenceDto> sentences = bookMapper.findSentencesByBookId(bookId, userId);
 
-        // 3. 투표 카운트 조회
-        book.setLikeCount(bookMapper.countLikes(bookId));
-        book.setDislikeCount(bookMapper.countDislikes(bookId));
+        // 3. MSA: 소설 투표 정보 조회 (Feign Client)
+        try {
+            ApiResponse<com.team2.commonmodule.feign.dto.BookReactionInfoDto> bookReactionResponse = reactionServiceClient
+                    .getBookReactionStats(bookId, userId);
+            if (bookReactionResponse != null && bookReactionResponse.getData() != null) {
+                var bookStats = bookReactionResponse.getData();
+                book.setLikeCount((int) bookStats.getLikeCount());
+                book.setDislikeCount((int) bookStats.getDislikeCount());
+                book.setMyVote(bookStats.getMyVote());
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch book reaction stats from reaction-service: {}", e.getMessage());
+            book.setLikeCount(0);
+            book.setDislikeCount(0);
+        }
 
         // 4. MSA: 회원 정보 조회 (Feign Client)
         // 작성자 ID 목록 수집 (중복 제거)
@@ -139,7 +156,7 @@ public class BookQueryService {
             }
         }
 
-        // 5. MSA: 반응(투표) 정보 조회 (Feign Client)
+        // 5. MSA: 문장 반응(투표) 정보 조회 (Feign Client)
         populateReactionStats(sentences);
 
         book.setSentences(sentences);

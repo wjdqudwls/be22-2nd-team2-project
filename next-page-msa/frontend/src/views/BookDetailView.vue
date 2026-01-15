@@ -1,179 +1,192 @@
 <template>
-  <div>
+  <div class="book-detail-page">
     <!-- Loading State -->
-    <div v-if="loading" class="text-center" style="padding: 50px;">
-      <h2>Loading...</h2>
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <span>불러오는 중...</span>
     </div>
 
-    <div v-else>
-      <!-- Title Section with Edit -->
-      <div id="book-header" class="text-center mb-4 fade-in">
-        <div v-if="!isEditingTitle" style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-          <h1 style="margin-bottom: 10px;">{{ book.title }}</h1>
-          <button v-if="canEditBook" @click="startEditTitle" class="btn btn-ghost btn-sm" title="제목 수정">✏️</button>
-          <button v-if="canEditBook" @click="deleteBook" class="btn btn-ghost btn-sm" title="소설 삭제"
-            style="color: #ff6b6b;">🗑️</button>
+    <div v-else class="book-detail-content">
+      <!-- Book Header Section -->
+      <section class="book-header">
+        <!-- Title with Edit -->
+        <div v-if="!isEditingTitle" class="title-section">
+          <h1 class="book-title">{{ book.title }}</h1>
+          <div v-if="canEditBook" class="title-actions">
+            <button @click="startEditTitle" class="icon-btn" title="제목 수정">✏️</button>
+            <button @click="deleteBook" class="icon-btn danger" title="소설 삭제">🗑️</button>
+          </div>
         </div>
-        <div v-else
-          style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
-          <input v-model="editTitleContent" class="form-control"
-            style="font-size: 1.5rem; width: auto; text-align: center;">
-          <button @click="saveTitle" class="btn btn-primary btn-sm">저장</button>
-          <button @click="cancelEditTitle" class="btn btn-outline btn-sm">취소</button>
+        <div v-else class="title-edit-section">
+          <input v-model="editTitleContent" class="form-control title-input" placeholder="제목을 입력하세요">
+          <div class="title-edit-actions">
+            <button @click="saveTitle" class="btn btn-primary btn-sm">저장</button>
+            <button @click="cancelEditTitle" class="btn btn-outline btn-sm">취소</button>
+          </div>
         </div>
 
-        <p style="color: var(--text-muted);">
-          <span>{{ getCategoryName(book.categoryId) }}</span> |
-          <span>{{ book.status }}</span> |
-          작가 <span>{{ book.sentences ? (new Set(book.sentences.map(s => s.writerId)).size) : 1 }}</span>명
+        <!-- Book Meta Info -->
+        <p class="book-meta">
+          <span class="category-tag">{{ getCategoryName(book.categoryId) }}</span>
+          <span class="divider">•</span>
+          <span :class="['status-tag', book.status === 'COMPLETED' ? 'completed' : 'writing']">
+            {{ book.status === 'COMPLETED' ? '완결' : '연재중' }}
+          </span>
+          <span class="divider">•</span>
+          <span class="writer-count">👥 {{ book.sentences ? (new Set(book.sentences.map(s => s.writerId)).size) : 1 }}명 참여</span>
         </p>
-        <div class="vote-container">
-          <button class="vote-action-btn like-btn" :class="{ active: book.myVote === 'LIKE' }" @click="voteBook('LIKE')">
-            <span class="icon">👍</span> 
-            <span class="label">개추</span>
-            <span class="count">{{ book.likeCount || 0 }}</span>
+
+        <!-- Vote Section -->
+        <div class="vote-section">
+          <button class="vote-card" :class="{ active: book.myVote === 'LIKE' }" @click="voteBook('LIKE')">
+            <span class="vote-icon">👍</span>
+            <span class="vote-label">개추</span>
+            <span class="vote-count">{{ book.likeCount || 0 }}</span>
           </button>
-          
-          <button class="vote-action-btn dislike-btn" :class="{ active: book.myVote === 'DISLIKE' }" @click="voteBook('DISLIKE')">
-            <span class="icon">👎</span>
-            <span class="label">비추</span>
-            <span class="count">{{ book.dislikeCount || 0 }}</span>
+          <button class="vote-card" :class="{ active: book.myVote === 'DISLIKE' }" @click="voteBook('DISLIKE')">
+            <span class="vote-icon">👎</span>
+            <span class="vote-label">비추</span>
+            <span class="vote-count">{{ book.dislikeCount || 0 }}</span>
           </button>
         </div>
 
-        <div class="action-buttons">
-          <router-link v-if="book.status === 'COMPLETED'" :to="'/books/' + bookId + '/viewer'" class="btn btn-primary btn-lg shine-effect">
+        <!-- Action Buttons -->
+        <div class="action-section">
+          <router-link v-if="book.status === 'COMPLETED'" :to="'/books/' + bookId + '/viewer'" class="btn btn-primary btn-action">
             📖 정주행 시작하기
           </router-link>
-          
-          <button v-if="book.status === 'WRITING' && isWriter" @click="completeBook" class="btn btn-outline-danger">
+          <button v-if="book.status === 'WRITING' && isWriter" @click="completeBook" class="btn btn-complete">
             ✨ 완결 짓기
           </button>
         </div>
-      </div>
+      </section>
 
-      <div class="container" style="max-width: 800px;">
+      <!-- Main Content -->
+      <main class="book-main">
         <!-- Sentence List -->
-        <div id="sentence-list" class="sentence-list">
+        <section class="sentence-section">
           <div v-for="sent in sortedSentences" :key="sent.sentenceId" class="sentence-card">
-            <!-- 문장 내용 -->
-            <div class="sentence-content-wrapper">
-              <div v-if="editingSentenceId !== sent.sentenceId" class="sentence-content">
-                <p>{{ sent.content }}</p>
-                <div v-if="canEditSentence(sent)" class="edit-actions">
-                  <button @click="startEditSentence(sent)" class="btn btn-ghost btn-sm" title="문장 수정">✏️</button>
-                  <button @click="deleteSentence(sent)" class="btn btn-ghost btn-sm" title="문장 삭제" style="color: #ff6b6b;">🗑️</button>
+            <!-- Sentence Content -->
+            <div class="sentence-body">
+              <div v-if="editingSentenceId !== sent.sentenceId" class="sentence-text-wrap">
+                <p class="sentence-text">{{ sent.content }}</p>
+                <div v-if="canEditSentence(sent)" class="sentence-actions">
+                  <button @click="startEditSentence(sent)" class="icon-btn small" title="수정">✏️</button>
+                  <button @click="deleteSentence(sent)" class="icon-btn small danger" title="삭제">🗑️</button>
                 </div>
               </div>
-              <div v-else class="sentence-edit-form">
+              <div v-else class="sentence-edit">
                 <textarea v-model="editSentenceContent" class="form-control" rows="3"></textarea>
-                <div class="edit-buttons">
+                <div class="sentence-edit-buttons">
                   <button @click="saveSentence(sent)" class="btn btn-primary btn-sm">저장</button>
                   <button @click="cancelEditSentence" class="btn btn-outline btn-sm">취소</button>
                 </div>
               </div>
             </div>
 
-            <!-- 문장 메타 정보 -->
-            <div class="sentence-meta">
-              <span class="sentence-info">No.{{ sent.sequenceNo }} by {{ sent.writerNicknm || '익명#' + sent.writerId }}</span>
-              <div class="vote-buttons">
-                <button class="vote-btn" :class="{ 'active-like': sent.myVote === 'LIKE' }"
-                  @click="voteSentence(sent, 'LIKE')">
-                  👍 <span>{{ sent.likeCount || 0 }}</span>
+            <!-- Sentence Footer -->
+            <div class="sentence-footer">
+              <span class="sentence-meta">
+                <span class="seq-num">{{ sent.sequenceNo }}번째</span>
+                <span class="writer-name">{{ sent.writerNicknm || '익명' }}</span>
+              </span>
+              <div class="sentence-votes">
+                <button class="vote-mini" :class="{ active: sent.myVote === 'LIKE' }" @click="voteSentence(sent, 'LIKE')">
+                  👍 {{ sent.likeCount || 0 }}
                 </button>
-                <button class="vote-btn" :class="{ 'active-dislike': sent.myVote === 'DISLIKE' }"
-                  @click="voteSentence(sent, 'DISLIKE')">
-                  👎 <span>{{ sent.dislikeCount || 0 }}</span>
+                <button class="vote-mini" :class="{ active: sent.myVote === 'DISLIKE' }" @click="voteSentence(sent, 'DISLIKE')">
+                  👎 {{ sent.dislikeCount || 0 }}
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Writing Area -->
-        <div v-if="book.status !== 'COMPLETED'" id="writing-area" class="writing-area">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">다음 문장 이어쓰기</h3>
-            <!-- Typing Indicator -->
-            <div v-show="activeTypers.length > 0"
-              style="font-size: 0.8rem; color: var(--primary-color); display: flex; align-items: center; gap: 4px;">
-              <span style="display: flex; gap: 2px;">
-                <span class="typing-dot" style="animation-delay: 0s;"></span>
-                <span class="typing-dot" style="animation-delay: 0.2s;"></span>
-                <span class="typing-dot" style="animation-delay: 0.4s;"></span>
+        <section v-if="book.status !== 'COMPLETED'" class="writing-section">
+          <div class="writing-header">
+            <h3>✍️ 다음 문장 이어쓰기</h3>
+            <div v-show="activeTypers.length > 0" class="typing-indicator">
+              <span class="typing-dots">
+                <span></span><span></span><span></span>
               </span>
-              <span style="font-weight: 600; margin-left: 4px;">{{ activeTypers.join(', ') }}</span>님이 입력
-              중...
+              <span>{{ activeTypers.join(', ') }}님이 입력 중...</span>
             </div>
           </div>
 
-          <!-- Guest Only -->
-          <div v-if="!authStore.isAuthenticated" class="guest-only"
-            style="text-align: center; padding: 25px 15px; background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
-            <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">
-              이야기에 참여하려면 로그인이 필요합니다.
-            </p>
-            <button @click="authStore.openLogin" class="btn btn-primary"
-              style="padding: 8px 20px; font-size: 0.85rem; border-radius: 20px;">
-              로그인하고 이어쓰기
-            </button>
+          <!-- Guest -->
+          <div v-if="!authStore.isAuthenticated" class="guest-prompt">
+            <p>이야기에 참여하려면 로그인이 필요합니다.</p>
+            <button @click="authStore.openLogin" class="btn btn-primary">로그인하고 이어쓰기</button>
           </div>
 
-          <!-- User Only -->
-          <div v-else class="user-only" style="display: flex; flex-direction: column; gap: 10px;">
-            <textarea v-model="newSentence" @input="handleInput" @blur="handleBlur" class="form-control" rows="3"
+          <!-- Logged In User -->
+          <div v-else class="writing-form">
+            <textarea 
+              v-model="newSentence" 
+              @input="handleInput" 
+              @blur="handleBlur" 
+              class="form-control writing-textarea"
               :placeholder="inputPlaceholder"
-              style="border-radius: 12px; font-size: 1rem; resize: none; min-height: 120px; padding: 15px;"
-              :disabled="isInputDisabled"></textarea>
-            <div style="display: flex; justify-content: flex-end;">
-              <button class="btn btn-primary" @click="submitSentence" :disabled="isInputDisabled"
-                style="padding: 12px 30px; font-size: 1rem; border-radius: 25px; font-weight: 600; box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.2);">문장
-                등록</button>
+              :disabled="isInputDisabled"
+            ></textarea>
+            <div class="writing-footer">
+              <span class="char-count">{{ newSentence.length }}/200</span>
+              <button class="btn btn-primary" @click="submitSentence" :disabled="isInputDisabled || !newSentence.trim()">
+                문장 등록
+              </button>
             </div>
           </div>
+        </section>
+
+        <!-- Completed Badge -->
+        <div v-else class="completed-badge-section">
+          <span class="badge-completed">🎉 완결된 소설입니다</span>
         </div>
-        <div v-else class="text-center" style="margin-top: 20px;">
-          <span class="badge badge-completed">완결됨</span>
-        </div>
 
-        <!-- Comments Area -->
-        <div class="card fade-in"
-          style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); border: 2px solid #BAE6FD;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">감상평</h3>
-            <div v-show="activeCommentTypers.length > 0" style="font-size: 0.75rem; color: var(--secondary-color);">
-              💬 <span style="font-weight: 600;">{{ activeCommentTypers.join(', ') }}</span>님이 작성 중...
-            </div>
-          </div>
-
-          <div v-if="!authStore.isAuthenticated" class="guest-only"
-            style="text-align: center; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 12px; margin-bottom: 20px;">
-            <button @click="authStore.openLogin" class="btn btn-outline"
-              style="padding: 6px 20px; font-size: 0.8rem; border-radius: 20px;">
-              로그인하고 감상평 남기기
-            </button>
-          </div>
-
-          <div v-else class="user-only">
-            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-              <textarea v-model="newComment" @input="handleCommentInput" @blur="handleCommentBlur" class="form-control"
-                rows="3" placeholder="이 소설에 대한 감상평을 남겨주세요..."
-                style="border-radius: 15px; font-size: 0.95rem; padding: 15px; resize: none; min-height: 100px;"></textarea>
-              <div style="display: flex; justify-content: flex-end;">
-                <button class="btn btn-primary" @click="submitComment"
-                  style="padding: 10px 30px; font-size: 0.9rem; border-radius: 25px; box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.2);">등록</button>
-              </div>
+        <!-- Comments Section -->
+        <section class="comments-section">
+          <div class="comments-header">
+            <h3>💬 감상평</h3>
+            <div v-show="activeCommentTypers.length > 0" class="typing-indicator small">
+              {{ activeCommentTypers.join(', ') }}님이 작성 중...
             </div>
           </div>
 
-          <div id="comment-list">
-            <comment-node v-for="comment in comments" :key="comment.commentId" :comment="comment"
-              :current-user-id="authStore.user?.userId" :user-role="authStore.user?.userRole" @reply="submitReply"
-              @edit="editComment" @delete="deleteComment"></comment-node>
+          <!-- Guest Prompt -->
+          <div v-if="!authStore.isAuthenticated" class="guest-prompt small">
+            <button @click="authStore.openLogin" class="btn btn-outline">로그인하고 감상평 남기기</button>
           </div>
-        </div>
-      </div>
+
+          <!-- Comment Form -->
+          <div v-else class="comment-form">
+            <textarea 
+              v-model="newComment" 
+              @input="handleCommentInput" 
+              @blur="handleCommentBlur" 
+              class="form-control"
+              placeholder="이 소설에 대한 감상평을 남겨주세요..."
+            ></textarea>
+            <div class="comment-form-footer">
+              <button class="btn btn-primary" @click="submitComment" :disabled="!newComment.trim()">등록</button>
+            </div>
+          </div>
+
+          <!-- Comment List -->
+          <div class="comment-list">
+            <comment-node 
+              v-for="comment in comments" 
+              :key="comment.commentId" 
+              :comment="comment"
+              :current-user-id="authStore.user?.userId" 
+              :user-role="authStore.user?.userRole" 
+              @reply="submitReply"
+              @edit="editComment" 
+              @delete="deleteComment"
+            />
+          </div>
+        </section>
+      </main>
     </div>
   </div>
 </template>
@@ -215,6 +228,9 @@ const activeCommentTypers = ref([])
 let stompClient = null
 let typingTimeout = null
 let commentTypingTimeout = null
+
+// User focus tracking (for smart auto-scroll)
+const isUserFocused = ref(false)
 
 // Category Map
 const categoryMap = { 'THRILLER': '스릴러', 'ROMANCE': '로맨스', 'FANTASY': '판타지', 'MYSTERY': '미스터리', 'SF': 'SF', 'DAILY': '일상' }
@@ -293,13 +309,9 @@ const fetchComments = async () => {
 // WebSocket
 const connectWebSocket = () => {
   stompClient = new Client({
-    brokerURL: 'ws://localhost:8082/ws', // Direct to story-service if possible, or via Proxy if ws supported
-    // Since we are proxying /ws in vite.config.js to localhost:8082, we should use window.location logic or relative path
-    // Vite Proxy handles ws://localhost:3000/ws -> ws://localhost:8082/ws
+    brokerURL: 'ws://localhost:8082/ws',
     webSocketFactory: () => new SockJS('/ws'), 
-    debug: function (str) {
-      console.log('[STOMP]', str)
-    },
+    debug: () => {},
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
@@ -311,6 +323,11 @@ const connectWebSocket = () => {
     stompClient.subscribe(`/topic/sentences/${bookId}`, (message) => handleNewSentence(JSON.parse(message.body)))
     stompClient.subscribe(`/topic/books/${bookId}/votes`, (message) => handleVoteUpdate(JSON.parse(message.body)))
     stompClient.subscribe(`/topic/comments/${bookId}`, (message) => handleNewComment(JSON.parse(message.body)))
+    stompClient.subscribe(`/topic/books/${bookId}/status`, (message) => handleBookStatusUpdate(JSON.parse(message.body)))
+  }
+
+  stompClient.onStompError = (frame) => {
+    console.error('[STOMP] Error:', frame.headers['message'])
   }
 
   stompClient.activate()
@@ -318,7 +335,6 @@ const connectWebSocket = () => {
 
 // Handlers
 const handleTypingStatus = (data) => {
-  // data: { nickname, isTyping }
   if (data.isTyping) {
      if (!activeTypers.value.includes(data.nickname)) activeTypers.value.push(data.nickname)
   } else {
@@ -336,15 +352,42 @@ const handleCommentTypingStatus = (data) => {
 
 const handleNewSentence = (event) => {
   sentences.value.push({
-    sentenceId: Date.now(), content: event.content, sequenceNo: event.sequenceNo,
-    writerNicknm: event.writerNickname, writerId: event.writerId, likeCount: 0, dislikeCount: 0
+    sentenceId: event.sentenceId || Date.now(), 
+    content: event.content, 
+    sequenceNo: event.sequenceNo,
+    writerNicknm: event.writerNickname, 
+    writerId: event.writerId, 
+    likeCount: 0, 
+    dislikeCount: 0
   })
   if (book.value) book.value.lastWriterUserId = event.writerId
-  nextTick(() => { window.scrollTo(0, document.body.scrollHeight) })
+  
+  // 사용자가 입력 중이 아닐 때만 자동 스크롤
+  if (!isUserFocused.value) {
+    nextTick(() => { 
+      const sentenceList = document.querySelector('.sentence-section')
+      if (sentenceList) {
+        const lastCard = sentenceList.querySelector('.sentence-card:last-child')
+        if (lastCard) {
+          lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }
+    })
+  }
 }
 
 const handleNewComment = (comment) => {
   comments.value.unshift(comment)
+}
+
+const handleBookStatusUpdate = (update) => {
+  // 완결 상태 실시간 업데이트
+  if (update.bookId === parseInt(bookId)) {
+    book.value.status = update.status
+    if (update.status === 'COMPLETED') {
+      toast.success('🎉 소설이 완결되었습니다!')
+    }
+  }
 }
 
 const handleVoteUpdate = (update) => {
@@ -358,11 +401,15 @@ const handleVoteUpdate = (update) => {
 
 // Typing Emitter
 const handleInput = () => {
+    isUserFocused.value = true
     if (typingTimeout) clearTimeout(typingTimeout)
     sendTyping(true)
     typingTimeout = setTimeout(() => sendTyping(false), 2000)
 }
-const handleBlur = () => { sendTyping(false) }
+const handleBlur = () => { 
+    isUserFocused.value = false
+    sendTyping(false) 
+}
 
 const sendTyping = (status) => {
     if (!stompClient || !stompClient.connected) return
@@ -373,11 +420,15 @@ const sendTyping = (status) => {
 }
 
 const handleCommentInput = () => {
+    isUserFocused.value = true
     if (commentTypingTimeout) clearTimeout(commentTypingTimeout)
     sendCommentTyping(true)
     commentTypingTimeout = setTimeout(() => sendCommentTyping(false), 2000)
 }
-const handleCommentBlur = () => { sendCommentTyping(false) }
+const handleCommentBlur = () => { 
+    isUserFocused.value = false
+    sendCommentTyping(false) 
+}
 
 const sendCommentTyping = (status) => {
     if (!stompClient || !stompClient.connected) return
@@ -389,18 +440,21 @@ const sendCommentTyping = (status) => {
 
 // Actions
 const submitSentence = async () => {
-    if (!newSentence.value) return
+    if (!newSentence.value.trim()) return
     const url = links.value['append-sentence'] ? links.value['append-sentence'].href : `/books/${bookId}/sentences`
     try {
         await axios.post(url, { content: newSentence.value })
         toast.success('문장이 등록되었습니다!')
         newSentence.value = ''
-        fetchBookDetail()
-    } catch(e) { console.error(e) }
+        await fetchBookDetail()
+    } catch(e) { 
+      console.error(e)
+      toast.error(e.response?.data?.message || '문장 등록에 실패했습니다.')
+    }
 }
 
 const submitComment = async () => {
-    if (!newComment.value) return
+    if (!newComment.value.trim()) return
     postComment(newComment.value, null, () => { newComment.value = '' })
 }
 
@@ -441,8 +495,7 @@ const voteBook = async (voteType) => {
         await axios.post(url, { bookId: parseInt(bookId), voteType })
         await fetchBookDetail()
     } catch(e) {
-        console.error('Vote error:', e)
-        toast.error('투표 처리 중 오류가 발생했습니다.')
+        toast.error(e.response?.data?.message || '투표 처리 중 오류가 발생했습니다.')
     }
 }
 
@@ -453,8 +506,7 @@ const voteSentence = async (sent, voteType) => {
         await axios.post(url, { voteType })
         await fetchBookDetail()
     } catch(e) {
-        console.error('Sentence vote error:', e)
-        toast.error('투표 처리 중 오류가 발생했습니다.')
+        toast.error(e.response?.data?.message || '투표 처리 중 오류가 발생했습니다.')
     }
 }
 
@@ -463,8 +515,8 @@ const completeBook = async () => {
     try {
         await axios.post(`/books/${bookId}/complete`)
         toast.success('완결되었습니다!')
-        fetchBookDetail()
-    } catch(e) { toast.error('실패') }
+        await fetchBookDetail()
+    } catch(e) { toast.error('완결 처리 실패') }
 }
 
 const deleteBook = async () => {
@@ -523,350 +575,622 @@ const saveTitle = async () => {
 </script>
 
 <style scoped>
-.typing-dot {
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    margin-right: 2px;
-    animation: typing-blink 1s infinite;
-    vertical-align: middle;
-}
-@keyframes typing-blink {
-    0%, 100% { opacity: 0.3; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.2); }
+/* Page Layout */
+.book-detail-page {
+  max-width: 100%;
+  min-height: 80vh;
 }
 
-.vote-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin: 30px 0;
+.book-detail-content {
+  animation: fadeIn 0.4s ease;
 }
 
-.vote-action-btn {
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading */
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  border: 2px solid #eee;
-  background: white;
+  padding: 80px 20px;
+  gap: 15px;
+  color: var(--text-muted);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Book Header */
+.book-header {
+  text-align: center;
+  padding: 0 20px 30px;
+  margin-bottom: 30px;
+}
+
+.title-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.book-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.title-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  padding: 5px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  opacity: 0.6;
 }
 
-.vote-action-btn:hover {
+.icon-btn:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+}
+
+.icon-btn.danger:hover {
+  background: rgba(255, 100, 100, 0.1);
+}
+
+.icon-btn.small {
+  font-size: 0.9rem;
+  padding: 3px 6px;
+}
+
+.title-edit-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.title-input {
+  font-size: 1.5rem;
+  text-align: center;
+  max-width: 400px;
+}
+
+.title-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Book Meta */
+.book-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+}
+
+.divider {
+  color: var(--border-color);
+}
+
+.category-tag {
+  background: linear-gradient(135deg, var(--primary-color), #FF6B9D);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-tag.writing {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.status-tag.completed {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.writer-count {
+  font-weight: 600;
+}
+
+/* Vote Section */
+.vote-section {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.vote-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 85px;
+  height: 85px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.vote-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-color: var(--border-color);
 }
 
-.vote-action-btn .icon {
+.vote-card.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, #FFF5F8, #FFE8EF);
+}
+
+.vote-icon {
   font-size: 1.8rem;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
-.vote-action-btn .label {
-  font-size: 0.8rem;
+.vote-label {
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 
-.vote-action-btn .count {
-  font-size: 0.9rem;
-  font-weight: 700;
+.vote-count {
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--text-color);
 }
 
-.vote-action-btn.active {
-  border-color: var(--primary-color);
-  background: #FFF0F5;
-}
-
-.vote-action-btn.active .count {
+.vote-card.active .vote-count {
   color: var(--primary-color);
 }
 
-.action-buttons {
+/* Action Section */
+.action-section {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
-.btn-lg {
-  padding: 12px 30px;
+.btn-action {
+  padding: 14px 35px;
   font-size: 1.1rem;
   font-weight: 700;
   border-radius: 30px;
 }
 
-.btn-outline-danger {
-  padding: 10px 20px;
+.btn-complete {
+  padding: 12px 25px;
+  background: transparent;
   border: 2px solid #ff6b6b;
   color: #ff6b6b;
-  background: transparent;
   border-radius: 25px;
   font-weight: 600;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-.btn-outline-danger:hover {
+.btn-complete:hover {
   background: #ff6b6b;
   color: white;
 }
 
-.shine-effect {
-  position: relative;
-  overflow: hidden;
+/* Main Content */
+.book-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.shine-effect::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(to bottom right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 100%);
-  transform: rotate(45deg);
-  animation: shine 3s infinite;
-}
-
-@keyframes shine {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) rotate(45deg); }
-}
-
-/* Sentence Vote Buttons */
-.vote-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.vote-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: 2px solid #eee;
-  border-radius: 20px;
-  background: white;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: all 0.2s ease;
-}
-
-.vote-btn:hover {
-  border-color: var(--border-color);
-  background: #FFF5F8;
-  transform: translateY(-2px);
-}
-
-.vote-btn.active-like {
-  border-color: var(--secondary-color);
-  background: linear-gradient(135deg, rgba(132, 94, 247, 0.1), rgba(151, 117, 250, 0.15));
-  color: var(--secondary-color);
-}
-
-.vote-btn.active-like:hover {
-  background: linear-gradient(135deg, rgba(132, 94, 247, 0.2), rgba(151, 117, 250, 0.25));
-}
-
-.vote-btn.active-dislike {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(232, 93, 117, 0.1), rgba(255, 107, 157, 0.15));
-  color: var(--primary-color);
-}
-
-.vote-btn.active-dislike:hover {
-  background: linear-gradient(135deg, rgba(232, 93, 117, 0.2), rgba(255, 107, 157, 0.25));
-}
-
-.vote-btn span {
-  font-weight: 700;
-}
-
-/* 전체 레이아웃 개선 */
-.sentence-list {
-  margin-bottom: 40px;
+/* Sentence Section */
+.sentence-section {
+  margin-bottom: 30px;
 }
 
 .sentence-card {
-  background: var(--card-bg);
+  background: white;
   border-radius: 20px;
   padding: 25px;
   margin-bottom: 15px;
   border-left: 4px solid var(--primary-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   transition: all 0.2s ease;
 }
 
 .sentence-card:hover {
-  box-shadow: 0 8px 20px rgba(232, 93, 117, 0.12);
+  box-shadow: 0 8px 25px rgba(232, 93, 117, 0.12);
 }
 
-.sentence-content-wrapper {
+.sentence-body {
   margin-bottom: 15px;
 }
 
-.sentence-content {
+.sentence-text-wrap {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 10px;
 }
 
-.sentence-content p {
+.sentence-text {
   flex: 1;
   font-size: 1.1rem;
-  line-height: 1.8;
+  line-height: 1.9;
   color: var(--text-color);
   margin: 0;
 }
 
-.edit-actions {
+.sentence-actions {
   display: flex;
-  gap: 5px;
-  opacity: 0.5;
+  gap: 3px;
+  opacity: 0;
   transition: opacity 0.2s;
 }
 
-.sentence-card:hover .edit-actions {
+.sentence-card:hover .sentence-actions {
   opacity: 1;
 }
 
-.sentence-edit-form {
+.sentence-edit {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.edit-buttons {
+.sentence-edit-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.sentence-meta {
+.sentence-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
   padding-top: 15px;
   border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-.sentence-info {
+.sentence-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.seq-num {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.writer-name {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sentence-votes {
+  display: flex;
+  gap: 8px;
+}
+
+.vote-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.writing-area {
-  background: var(--card-bg);
+.vote-mini:hover {
+  border-color: var(--border-color);
+  background: #FFF5F8;
+}
+
+.vote-mini.active {
+  border-color: var(--primary-color);
+  background: #FFF0F5;
+  color: var(--primary-color);
+}
+
+/* Writing Section */
+.writing-section {
+  background: white;
   border-radius: 25px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 30px rgba(232, 93, 117, 0.1);
+}
+
+.writing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.writing-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.typing-indicator.small {
+  font-size: 0.8rem;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.typing-dots span {
+  width: 5px;
+  height: 5px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: typingBounce 1s infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.guest-prompt {
+  text-align: center;
+  padding: 30px 15px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 15px;
+  border: 1px dashed rgba(0,0,0,0.1);
+}
+
+.guest-prompt p {
+  color: var(--text-muted);
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+}
+
+.guest-prompt.small {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.writing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.writing-textarea {
+  min-height: 130px;
+  border-radius: 15px;
+  font-size: 1rem;
+  resize: none;
+  padding: 18px;
+}
+
+.writing-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.char-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Completed Badge */
+.completed-badge-section {
+  text-align: center;
   padding: 25px;
-  box-shadow: 0 8px 25px rgba(232, 93, 117, 0.1);
   margin-bottom: 30px;
 }
 
-/* 반응형 디자인 */
+.badge-completed {
+  display: inline-block;
+  background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+  color: #1565C0;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Comments Section */
+.comments-section {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 2px solid #BAE6FD;
+  border-radius: 25px;
+  padding: 30px;
+  margin-bottom: 40px;
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.comments-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.comment-form textarea {
+  min-height: 100px;
+  border-radius: 15px;
+  resize: none;
+  padding: 15px;
+}
+
+.comment-form-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment-list {
+  margin-top: 20px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .vote-container {
+  .book-title {
+    font-size: 1.6rem;
+  }
+  
+  .vote-section {
     gap: 15px;
   }
   
-  .vote-action-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
+  .vote-card {
+    width: 75px;
+    height: 75px;
   }
   
-  .vote-action-btn .icon {
+  .vote-icon {
     font-size: 1.5rem;
   }
   
-  .vote-action-btn .label {
-    font-size: 0.7rem;
-  }
-  
-  .vote-action-btn .count {
-    font-size: 0.8rem;
-  }
-  
   .sentence-card {
-    padding: 18px;
-    border-radius: 15px;
+    padding: 20px;
   }
   
-  .sentence-content p {
+  .sentence-text {
     font-size: 1rem;
   }
   
-  .sentence-meta {
+  .sentence-footer {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
   
-  .vote-buttons {
+  .sentence-votes {
     width: 100%;
     justify-content: flex-end;
   }
   
-  .action-buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .btn-lg {
-    padding: 10px 25px;
-    font-size: 1rem;
-  }
-  
-  .writing-area {
-    padding: 20px;
+  .writing-section,
+  .comments-section {
+    padding: 22px;
     border-radius: 20px;
+  }
+  
+  .action-section {
+    flex-direction: column;
+    width: 100%;
+    padding: 0 20px;
+  }
+  
+  .btn-action,
+  .btn-complete {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .vote-container {
-    gap: 10px;
+  .vote-card {
+    width: 65px;
+    height: 65px;
+    border-radius: 16px;
   }
   
-  .vote-action-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
-  }
-  
-  .vote-action-btn .icon {
+  .vote-icon {
     font-size: 1.3rem;
-    margin-bottom: 2px;
   }
   
-  .vote-action-btn .label {
-    font-size: 0.65rem;
+  .vote-label {
+    font-size: 0.7rem;
   }
   
-  .vote-action-btn .count {
-    font-size: 0.75rem;
+  .vote-count {
+    font-size: 0.9rem;
   }
   
   .sentence-card {
-    padding: 15px;
+    padding: 16px;
+    border-radius: 15px;
   }
   
-  .vote-btn {
+  .vote-mini {
     padding: 5px 10px;
     font-size: 0.8rem;
   }

@@ -1,5 +1,6 @@
 package com.team2.reactionservice.feign.controller;
 
+import com.team2.commonmodule.feign.dto.BookReactionInfoDto;
 import com.team2.commonmodule.feign.dto.MemberReactionStatsDto;
 import com.team2.commonmodule.feign.dto.SentenceReactionInfoDto;
 import com.team2.commonmodule.response.ApiResponse;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-
 
 /**
  * ReactionInternalController
@@ -45,6 +45,15 @@ public class ReactionInternalController {
 
         Map<Long, SentenceReactionInfoDto> stats = reactionInternalService
                 .getSentenceReactions(sentenceIds, userId);
+        return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    @GetMapping("/reactions/books/{bookId}/stats")
+    public ResponseEntity<ApiResponse<BookReactionInfoDto>> getBookReactionStats(
+            @PathVariable Long bookId,
+            @RequestParam(required = false) Long userId) {
+
+        BookReactionInfoDto stats = reactionInternalService.getBookReactionStats(bookId, userId);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
 }

@@ -367,10 +367,216 @@ a {
     50% { transform: translateY(-10px); }
 }
 
-/* Responsive */
+/* ==================== Responsive Design ==================== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Mobile (up to 768px) */
 @media (max-width: 768px) {
-    .hero-title { font-size: 2.5rem; }
-    .grid { grid-template-columns: 1fr; }
+    /* Typography */
+    .hero-title {
+        font-size: 2.2rem;
+        line-height: 1.2;
+    }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.2rem; }
+
+    /* Layout */
+    .container {
+        padding: 0 15px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Navigation */
+    nav {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-links li > div,
+    .nav-links li > button {
+        width: 100%;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    /* Cards */
+    .card {
+        padding: 20px;
+        border-radius: var(--radius-md);
+    }
+
+    /* Forms */
+    .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    /* Modals */
+    .modal {
+        padding: 20px;
+        margin: 10px;
+        max-height: calc(100vh - 20px);
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    /* Book Detail specific */
+    .book-header {
+        padding: 20px;
+    }
+
+    .title-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .title-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .book-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .vote-section {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .vote-card {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .action-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-action {
+        width: 100%;
+    }
+
+    /* Sentence cards */
+    .sentence-card {
+        padding: 15px;
+    }
+
+    .sentence-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .sentence-votes {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Comment section */
+    .comment-section {
+        padding: 15px;
+    }
+
+    .comment-input-wrapper {
+        flex-direction: column;
+    }
+
+    .comment-input {
+        min-height: 80px;
+    }
+
+    /* Search and filters */
+    .search-bar,
+    .filter-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-bar input,
+    .filter-bar select {
+        width: 100%;
+    }
+}
+
+/* Small Mobile (up to 480px) */
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+
+    .container {
+        padding: 0 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .modal {
+        padding: 10px;
+        margin: 5px;
+    }
+
+    .vote-card {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    .sentence-card {
+        padding: 12px;
+    }
 }
 
 /* Fade */

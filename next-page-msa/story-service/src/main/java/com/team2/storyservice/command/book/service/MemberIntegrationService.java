@@ -1,6 +1,8 @@
 package com.team2.storyservice.command.book.service;
 
-import com.team2.storyservice.feign.MemberServiceClient;
+import com.team2.commonmodule.feign.MemberServiceClient;
+import com.team2.commonmodule.feign.dto.MemberInfoDto;
+import com.team2.commonmodule.response.ApiResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,11 @@ public class MemberIntegrationService {
 
     @CircuitBreaker(name = "default", fallbackMethod = "getNicknameFallback")
     public String getUserNickname(Long userId) {
-        return memberServiceClient.getUserNickname(userId);
+        ApiResponse<MemberInfoDto> response = memberServiceClient.getMemberInfo(userId);
+        if (response != null && response.getData() != null) {
+            return response.getData().getUserNicknm();
+        }
+        return "Unknown Writer";
     }
 
     public String getNicknameFallback(Long userId, Throwable t) {

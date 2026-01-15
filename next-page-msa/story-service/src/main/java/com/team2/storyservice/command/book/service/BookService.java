@@ -126,6 +126,12 @@ public class BookService {
                                 .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
 
                 book.completeManually(requesterId);
+
+                // WebSocket 이벤트 발행 (완결 상태 브로드캐스트)
+                messagingTemplate.convertAndSend("/topic/books/" + bookId + "/status",
+                                java.util.Map.of(
+                                                "bookId", bookId,
+                                                "status", "COMPLETED"));
         }
 
         public void updateBookTitle(Long bookId, Long requesterId, String title) {

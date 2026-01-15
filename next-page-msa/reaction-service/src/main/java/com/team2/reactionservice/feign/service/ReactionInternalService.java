@@ -1,8 +1,11 @@
 package com.team2.reactionservice.feign.service;
 
+import com.team2.commonmodule.feign.dto.BookReactionInfoDto;
 import com.team2.commonmodule.feign.dto.MemberReactionStatsDto;
 import com.team2.commonmodule.feign.dto.SentenceReactionInfoDto;
+import com.team2.reactionservice.command.reaction.entity.BookVote;
 import com.team2.reactionservice.command.reaction.entity.VoteType;
+import com.team2.reactionservice.command.reaction.repository.BookVoteRepository;
 import com.team2.reactionservice.command.reaction.repository.CommentRepository;
 import com.team2.reactionservice.command.reaction.repository.SentenceVoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 
 /**
  * ReactionInternalService
@@ -26,12 +29,33 @@ public class ReactionInternalService {
 
     private final CommentRepository commentRepository;
     private final SentenceVoteRepository sentenceVoteRepository;
+    private final BookVoteRepository bookVoteRepository;
 
     public MemberReactionStatsDto getMemberReactionStats(Long userId) {
         int writtenCommentCount = commentRepository.countByWriterId(userId);
 
         return MemberReactionStatsDto.builder()
                 .writtenCommentCount(writtenCommentCount)
+                .build();
+    }
+
+    public BookReactionInfoDto getBookReactionStats(Long bookId, Long userId) {
+        long likeCount = bookVoteRepository.countByBookIdAndVoteType(bookId, VoteType.LIKE);
+        long dislikeCount = bookVoteRepository.countByBookIdAndVoteType(bookId, VoteType.DISLIKE);
+
+        String myVote = null;
+        if (userId != null) {
+            Optional<BookVote> vote = bookVoteRepository.findByBookIdAndVoterId(bookId, userId);
+            if (vote.isPresent()) {
+                myVote = vote.get().getVoteType().name();
+            }
+        }
+
+        return BookReactionInfoDto.builder()
+                .bookId(bookId)
+                .likeCount(likeCount)
+                .dislikeCount(dislikeCount)
+                .myVote(myVote)
                 .build();
     }
 

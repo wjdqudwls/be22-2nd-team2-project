@@ -14,7 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import com.team2.reactionservice.feign.MemberServiceClient;
+import com.team2.commonmodule.feign.MemberServiceClient;
+import com.team2.commonmodule.feign.dto.MemberInfoDto;
 import java.time.LocalDateTime;
 
 /**
@@ -49,7 +50,10 @@ public class ReactionController {
     Long userId = SecurityUtil.getCurrentUserId();
     String nickname = "User#" + userId;
     try {
-      nickname = memberServiceClient.getUserNickname(userId);
+      ApiResponse<MemberInfoDto> response = memberServiceClient.getMemberInfo(userId);
+      if (response != null && response.getData() != null) {
+        nickname = response.getData().getUserNicknm();
+      }
     } catch (Exception e) {
       // Fallback or log error
       // log.warn("Failed to fetch nickname for user {}", userId);

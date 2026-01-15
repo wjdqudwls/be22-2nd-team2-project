@@ -2,7 +2,7 @@
   <div class="comment-node card-subtle" style="padding: 15px; margin-bottom: 10px; border-radius: 12px;">
     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
       <div>
-        <span style="font-weight: 700; font-size: 0.95rem; color: var(--primary-color);">{{ comment.writerNicknm }}</span>
+        <span style="font-weight: 700; font-size: 0.95rem; color: var(--primary-color);">{{ comment.writerNicknm || '익명' }}</span>
         <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">{{ new Date(comment.createdAt).toLocaleString() }}</span>
       </div>
       <div style="display: flex; gap: 5px;">

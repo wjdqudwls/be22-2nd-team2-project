@@ -108,7 +108,10 @@ public class SecurityConfig {
                 "/actuator/**")
             .permitAll()
 
-            // 9. 나머지 모든 요청(POST, PUT, PATCH, DELETE 등)은 인증 필요
+            // 9. 내부 MSA 서비스 간 통신 API - 인증 불필요
+            .requestMatchers("/internal/**").permitAll()
+
+            // 10. 나머지 모든 요청(POST, PUT, PATCH, DELETE 등)은 인증 필요
             .anyRequest().authenticated())
 
         // Form Login / HTTP Basic 비활성화
