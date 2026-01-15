@@ -78,7 +78,7 @@
 | **🏗️ MSA 전환** | ✅ 완료 | **Eureka**, **Gateway + JWT Filter**, **Feign Client**, 3개 DB 분리, **Application Level Join** |
 | **🛡️ 안정성** | ✅ 완료 | **Resilience4j (Circuit Breaker)** 적용, 장애 전파 방지 및 Fallback 처리 |
 | **API & Architecture** | ✅ 완료 | **HATEOAS**, CQRS, Swagger, **Dynamic Topic Routing (/topic/{bookId})** |
-| **🎨 UI/UX** | ✅ 완료 | **Cute Pop 디자인**, 반응형, **댓글(파랑)/본문(분홍) 영역 구분**, 토스트 알림 |
+| **🎨 UI/UX** | ✅ 완료 | **Cute Pop 디자인**, 로고 폰트(Gaegu), 모달 UX 개선, 토스트 알림 |
 | **🧪 테스트** | ✅ 완료 | 전체 API 시나리오 테스트 (`http/api-test.http`), 단위/통합 테스트 환경 |
 
 <br>
@@ -715,6 +715,17 @@ Client → http://localhost:8000/api/* → Gateway → 각 서비스
 **Last Updated:** 2026-01-15
 **Status:** ✅ Production Ready (MSA)
 **Architecture:** Microservices (Eureka + Gateway + 3 Services)
+
+---
+
+Copyright © 2026 **Team Next Page**. All rights reserved.
+
+---
+
+## 📚 API 명세 (API Specification)
+
+상세한 REST API 명세(Request/Response 규격)는 별도 문서로 관리됩니다.
+[👉 API 상세 명세서 보러가기 (API_SPECIFICATION.md)](next-page-msa/API_SPECIFICATION.md)
 
 ---
 

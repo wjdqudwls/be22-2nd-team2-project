@@ -1,6 +1,6 @@
 # Next-Page MSA 전환 현황
 
-> **Last Updated:** 2026-01-16
+> **Last Updated:** 2026-01-15
 > **Status:** ✅ 모든 전환 작업 완료 (All Tasks Completed)
 
 ## ✅ 완료된 작업
@@ -72,6 +72,12 @@
 - [x] Circuit Breaker (Resilience4j) 적용
 - [x] Fallback 메서드 구현
 
+### 8. Frontend UI/UX Polish ✅
+
+- [x] Logo Font ('Gaegu') 적용
+- [x] Login/Signup Modal UX 개선 (드래그 닫힘 방지)
+- [x] 503 Service Unavailable (Gateway) 해결 (common-module fix)
+
 ---
 
 ## 🔧 Gradle 빌드 명령어
@@ -94,5 +100,5 @@
 
 ---
 
-**Completion Date:** 2026-01-16
+**Completion Date:** 2026-01-15
 **Result:** Monolithic 아키텍처에서 MSA로의 전환이 성공적으로 완료됨.

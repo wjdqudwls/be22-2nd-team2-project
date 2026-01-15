@@ -1,0 +1,30 @@
+plugins {
+    id 'base'
+    id "com.github.node-gradle.node" version "7.0.0"
+}
+
+node {
+    // 특정 Node.js 버전을 다운로드하여 사용 (로컬 환경 오염 방지)
+    download = true
+    version = '18.17.0' 
+}
+
+// 'npm install' task configuration
+npm_install {
+    args = ['install']
+}
+
+// 'npm run dev' to start local dev server
+task start(type: NpmTask) {
+    dependsOn npm_install
+    args = ['run', 'dev']
+}
+
+// 'npm run build' for production build
+task buildFrontend(type: NpmTask) {
+    dependsOn npm_install
+    args = ['run', 'build']
+}
+
+// Hook into standard Gradle lifecycle
+assemble.dependsOn buildFrontend

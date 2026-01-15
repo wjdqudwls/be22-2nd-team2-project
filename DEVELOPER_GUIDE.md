@@ -742,6 +742,20 @@ private Long userId;     // ✅ BIGINT와 매핑
 - MariaDB 10.6+
 - Git
 
+### 0단계: 환경 변수 설정 (.env)
+
+`config-server`가 Git 저장소에 접근하기 위해 보안 정보가 필요합니다.
+**루트 폴더(`next-page-msa/`)** 에 `.env` 파일을 생성하고 아래 내용을 작성하세요.
+
+```properties
+# .env 파일 예시
+CONFIG_GIT_URI=https://github.com/fdrn9999/next-page-env
+CONFIG_GIT_USERNAME=your_git_username
+CONFIG_GIT_PASSWORD=your_git_token
+```
+
+> **주의:** 이 파일은 `.gitignore`에 등록되어 있어 커밋되지 않습니다. 로컬 실행 시 필수입니다.
+
 ### 1단계: 데이터베이스 설정 (Database Setup)
 
 MSA 환경을 위한 데이터베이스와 계정을 생성합니다. 편리한 관리를 위해 제공된 스크립트를 사용하세요.
@@ -1509,6 +1523,37 @@ curl -X POST http://localhost:8000/api/reactions/comments \
     "content": "재미있네요!"
   }'
 ```
+
+---
+
+## PART 3-7. Troubleshooting (트러블슈팅)
+
+### ⚠️ 자주 발생하는 이슈 해결
+
+#### 1. 503 Service Unavailable (Gateway Error)
+
+- **증상:** Frontend에서 API 호출 시 503 에러 발생 (`/api/books` 등)
+- **원인:**
+  1. **서비스가 Eureka에 등록되지 않음:** 해당 서비스(Story, Member 등)가 실행 중인지 확인.
+  2. **잘못된 서비스 이름 등록 (Critial):** `common-module`의 `application.properties`에 `spring.application.name`이 설정되어 있으면, 이를 의존하는 모든 서비스가 `COMMON-MODULE`이라는 이름으로 Eureka에 등록됨.
+- **해결:**
+  - `common-module/src/main/resources/application.properties` 파일에서 `spring.application.name` 설정을 **제거**하거나 비워둠.
+  - 서비스 재시작 후 Eureka Dashboard(`http://localhost:8761`)에서 `MEMBER-SERVICE`, `STORY-SERVICE` 등이 올바른 이름으로 등록되었는지 확인.
+
+#### 2. Frontend CORS / Proxy 이슈
+
+- **증상:** 프론트엔드에서 백엔드 호출 시 CORS 에러 또는 404 발생
+- **해결:**
+  - 개발 환경(Vite)에서는 `vite.config.js`의 `proxy` 설정을 통해 Gateway(`http://localhost:8000`)로 요청을 우회.
+  - `pathRewrite` 또는 `changeOrigin: true` 설정 확인.
+  - Gateway Server의 `GlobalCorsConfig` 또는 `application.yml`의 CORS 설정 확인.
+
+#### 3. Config Server 연결 실패
+
+- **증상:** 서비스 기동 시 "Fetching config from server" 단계에서 실패하거나 타임아웃
+- **해결:**
+  - Config Server(`Port 8888`)가 가장 먼저 실행되어 있어야 함.
+  - `bootstrap.yml` (또는 `application.yml`의 `spring.config.import`) 설정에서 `spring.cloud.config.uri`가 올바른지 확인.
 
 ---
 

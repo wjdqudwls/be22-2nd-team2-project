@@ -3,6 +3,23 @@
 ## 개요
 
 이 디렉토리는 Next-Page 프로젝트의 Monolithic 아키텍처를 MSA로 전환하기 위한 데이터베이스 분리 스크립트를 포함합니다.
+**Last Updated:** 2026-01-15
+
+## ⚡ Quick Start (Windows PowerShell)
+
+데이터베이스 설치를 한 번에 완료하려면 `database-scripts` 디렉토리에서 아래 명령을 실행하세요.
+
+```powershell
+$ROOT_PASS = "mariadb"
+$APP_USER = "swcamp"
+$APP_PASS = "swcamp"
+
+Get-Content 00-init-roles.sql | mysql -u root -p$ROOT_PASS
+Get-Content 01-create-databases.sql | mysql -u $APP_USER -p$APP_PASS
+Get-Content 02-member-service-schema.sql | mysql -u $APP_USER -p$APP_PASS
+Get-Content 03-story-service-schema.sql | mysql -u $APP_USER -p$APP_PASS
+Get-Content 04-reaction-service-schema.sql | mysql -u $APP_USER -p$APP_PASS
+```
 
 ## 데이터베이스 구조
 

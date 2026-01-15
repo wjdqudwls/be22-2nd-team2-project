@@ -1,0 +1,170 @@
+### ===================================================================
+### 📘 Next Page MSA Integrated Test Suite
+### ===================================================================
+### 이 파일은 [IntelliJ HTTP Client]를 사용하여 MSA 환경의 모든 API를 테스트합니다.
+### 모든 요청은 API Gateway (Port 8000)를 경유하여 각 마이크로서비스로 라우팅됩니다.
+###
+### 📌 사전 준비:
+### 1. 모든 서비스(Config, Eureka, Gateway, Member, Story, Reaction)가 실행 중이어야 합니다.
+### 2. 'Run All'을 누르지 말고, 시나리오 순서대로 하나씩 실행하는 것을 권장합니다.
+###
+### 📌 인증 흐름:
+### - '회원가입' -> '로그인' 성공 시, JWT 토큰이 자동으로 [Global Variable]에 저장됩니다.
+### - 이후 'Authorization: Bearer {{accessToken}}' 헤더가 포함된 요청들은 자동으로 인증됩니다.
+### ===================================================================
+
+### 🌍 Global Configuration
+@gatewayUrl = http://localhost:8000
+@contentType = application/json
+
+### ===================================================================
+### 1️⃣ 회원 관리 (Member Service)
+### ===================================================================
+
+### 1-1. 회원가입 (Sign Up)
+# @name signup
+POST {{gatewayUrl}}/api/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "userEmail": "msa_tester@example.com",
+  "userPw": "test1234!",
+  "userNicknm": "MSA테스터"
+}
+
+### 1-2. 로그인 (Login) & 토큰 발급
+# @name login
+POST {{gatewayUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "userEmail": "msa_tester@example.com",
+  "userPw": "test1234!"
+}
+
+> {%
+  // 응답에서 AccessToken과 RefreshToken을 추출하여 전역 변수에 저장
+  client.global.set("accessToken", response.body.data.accessToken);
+  client.global.set("refreshToken", response.body.data.refreshToken);
+  client.log("✅ 인증 토큰이 갱신되었습니다: " + response.body.data.accessToken);
+%}
+
+### 1-3. 내 정보 조회 (My Page)
+# @name getMyInfo
+GET {{gatewayUrl}}/api/members/me
+Authorization: Bearer {{accessToken}}
+
+
+### ===================================================================
+### 2️⃣ 소설 집필 (Story Service)
+### ===================================================================
+
+### 2-1. 소설 생성 (Create Book)
+# @name createBook
+POST {{gatewayUrl}}/api/books
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "MSA 아키텍처의 비밀",
+  "categoryId": "1",
+  "maxSequence": 50,
+  "firstSentence": "모든 서비스가 분리된 그날, 우리는 Gateway 앞에 모였다."
+}
+
+> {%
+  client.global.set("bookId", response.body.data);
+  client.log("📘 생성된 소설 ID: " + response.body.data);
+%}
+
+### 2-2. 소설 목록 조회 (List Books)
+GET {{gatewayUrl}}/api/books?page=0&size=10&sort=createdAt,desc
+
+### 2-3. 소설 상세 조회 (Book Detail)
+GET {{gatewayUrl}}/api/books/{{bookId}}
+
+### 2-4. 문장 이어쓰기 (Append Sentence)
+# @name appendSentence
+POST {{gatewayUrl}}/api/books/{{bookId}}/sentences
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "content": "트래픽이 폭주해도 Circuit Breaker가 우릴 지켜줄 것이다."
+}
+
+> {%
+  client.global.set("sentenceId", response.body.data);
+%}
+
+### 2-5. 내가 쓴 문장 조회 (Internal Connection Test)
+# 이 API는 Story Service가 Member Service를 Feign으로 호출해야 정상 동작함
+GET {{gatewayUrl}}/api/books/mysentences
+Authorization: Bearer {{accessToken}}
+
+
+### ===================================================================
+### 3️⃣ 반응 및 투표 (Reaction Service)
+### ===================================================================
+
+### 3-1. 댓글 작성 (Add Comment)
+POST {{gatewayUrl}}/api/reactions/comments
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "bookId": {{bookId}},
+  "content": "정말 흥미진진한 아키텍처 이야기네요!"
+}
+
+> {%
+  client.global.set("commentId", response.body.data);
+%}
+
+### 3-2. 소설 좋아요 (Vote Like)
+POST {{gatewayUrl}}/api/reactions/votes/books
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "bookId": {{bookId}},
+  "voteType": "LIKE"
+}
+
+### 3-3. 문장 싫어요 (Vote Dislike)
+POST {{gatewayUrl}}/api/reactions/votes/sentences/{{sentenceId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "voteType": "DISLIKE"
+}
+
+
+### ===================================================================
+### 4️⃣ 관리자 기능 (Admin)
+### ===================================================================
+
+### 4-1. 관리자 회원가입
+POST {{gatewayUrl}}/api/auth/admin
+Content-Type: {{contentType}}
+
+{
+  "userEmail": "admin@nextpage.com",
+  "userPw": "admin1234!",
+  "userNicknm": "시스템관리자"
+}
+
+### 4-2. 관리자 로그인
+# @name adminLogin
+POST {{gatewayUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "userEmail": "admin@nextpage.com",
+  "userPw": "admin1234!"
+}
+
+> {%
+  client.global.set("adminToken", response.body.data.accessToken);
+%}

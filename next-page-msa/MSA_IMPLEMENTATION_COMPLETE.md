@@ -1,7 +1,7 @@
 # 🎯 MSA 전환 완료 상태 문서
 
-> **Last Updated:** 2026-01-16
-> **Status:** ✅ 빌드 완료, 안정성(Circuit Breaker) 확보, 프로덕션 준비 완료
+> **Last Updated:** 2026-01-15
+> **Status:** ✅ 빌드 완료, 설정 중앙 관리(Config Server), 안정성(Circuit Breaker) 확보
 
 ---
 
@@ -22,6 +22,30 @@
 | **통신** | Feign Client 구현 | ✅ 완료 | MemberServiceClient, StoryServiceClient |
 | **안정성** | Circuit Breaker 적용 | ✅ 완료 | Resilience4j, Fallback 처리 |
 | **빌드** | 전체 MSA 빌드 | ✅ 성공 | 43 tasks, 21초 |
+| **기능** | WebSocket (실시간) | ✅ 완료 | story-service 기동 |
+| **UI/UX** | Frontend Polish | ✅ 완료 | 로고 폰트(Gaegu), 모달 UX, 503 에러 해결 |
+
+---
+
+## 🚦 서비스 기동 및 포트 정보
+
+### 1. 서비스별 포트 (Service Ports)
+
+| 서비스명 | 포트 (Port) | 역할 |
+|:---|:---:|:---|
+| **Config Server** | 8888 | 중앙 설정 관리 (Git) |
+| **Discovery Server** | 8761 | 서비스 등록 및 탐색 (Eureka) |
+| **Gateway Server** | 8000 | API 라우팅 및 JWT 필터 |
+| **Member Service** | 8081 | 회원 및 인증 관리 |
+| **Story Service** | 8082 | 소설 및 문장 관리 (WebSocket) |
+| **Reaction Service** | 8083 | 댓글 및 투표 관리 |
+
+### 2. 권장 실행 순서 (Execution Order)
+
+1. **Config Server** (기동 완료 후 5~10초 대기)
+2. **Discovery Server** (기동 완료 후 Eureka 대시보드 확인)
+3. **Domain Services** (Member → Story → Reaction 순서 권장)
+4. **Gateway Server** (최종 진입점)
 
 ---
 

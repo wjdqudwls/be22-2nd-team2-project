@@ -26,6 +26,9 @@ dependencies {
 
     // Slf4j Logging
     api 'org.slf4j:slf4j-api'
+
+    // Documentation (Shared Swagger Config)
+    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 }
 // UTF-8 인코딩 설정
 tasks.withType(JavaCompile) {
